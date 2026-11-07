@@ -1,0 +1,4 @@
+lan-server/config.json
+node_modules/
+.env
+*.zip

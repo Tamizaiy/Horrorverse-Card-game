@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HORRORVERSE — Deck Builder</title>
+<style>
+:root{--bg:#0d0c11;--panel:#17151d;--panel2:#211d27;--border:#39313e;--accent:#cf4251;--text:#f4edf1;--muted:#ad9da9;--common:#4da58a;--special:#b27dde;--item:#d2a461;--magic:#648dd6;--gold:#e7b86e}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 30% 0%,#271923 0%,var(--bg) 55%);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.35;cursor:not-allowed}.app{max-width:1540px;margin:auto;padding:18px;min-height:100vh}.top{display:flex;align-items:center;gap:18px;background:linear-gradient(110deg,#241b24,#16151b);border:1px solid var(--border);border-radius:12px;padding:13px 17px;margin-bottom:14px;flex-wrap:wrap}.back{font-size:24px;line-height:1;border:0;background:#49232e;color:#ff7c84;border-radius:8px;padding:8px 15px}.brand{font-family:Georgia,serif;font-weight:800;letter-spacing:2px;font-size:19px;color:#dfbdc0}.divider{width:1px;background:var(--border);height:34px}.count{font-size:24px;font-weight:800;white-space:nowrap}.count small{font-size:12px;font-weight:600;color:var(--muted);display:block}.distribution{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}.pill{border-radius:8px;border:1px solid var(--border);background:#231e29;padding:8px 10px;white-space:nowrap;font-size:12px}.pill strong{font-size:16px;margin-left:5px}.pill.invalid{outline:1px solid #e86571}.layout{display:grid;grid-template-columns:minmax(0,1fr) 338px;gap:14px;align-items:start}.left{background:#141219;border:1px solid var(--border);border-radius:12px;min-height:78vh;padding:13px}.toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}.tabs{display:flex;gap:5px}.tab{background:#28212e;color:#c9b9c7;border:1px solid #3b303f;border-radius:7px;padding:9px 13px;font-weight:700}.tab.active{color:#fff;background:#743142;border-color:#bf4b5a}.search{background:#201d25;border:1px solid #4a3a4a;border-radius:7px;color:white;padding:10px 12px;min-width:180px;flex:1;max-width:270px}.select{background:#201d25;border:1px solid #4a3a4a;border-radius:7px;color:white;padding:10px;max-width:160px}.grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;max-height:calc(100vh - 206px);min-height:510px;overflow:auto;padding:4px 5px 8px 1px;align-content:start}.card{position:relative;aspect-ratio:0.69;min-height:148px;border:2px solid #4a3a49;border-radius:10px;background:linear-gradient(170deg,#332a35 0%,#18171d 67%);padding:8px;display:flex;flex-direction:column;text-align:left;transition:transform .15s,border-color .15s;min-width:0;overflow:hidden}.card:hover{transform:translateY(-2px);border-color:#ac7884}.card.selected{border-color:#f19c9d;box-shadow:0 0 0 2px #752b3b}.stripe{height:5px;border-radius:4px;margin-bottom:9px;flex-shrink:0}.cardtype{font-size:9px;text-transform:uppercase;letter-spacing:1.1px;font-weight:750;color:#c5afbe}.symbol{flex:1;display:flex;justify-content:center;align-items:center;color:#826d80;font-size:40px;font-family:Georgia,serif;opacity:.66;min-height:30px;background:#121019;border-radius:6px;padding:6px;aspect-ratio:0.78}.cardname{font-family:Georgia,serif;font-size:clamp(12px,1vw,16px);font-weight:700;overflow-wrap:anywhere;line-height:1.15}.stats{display:flex;justify-content:space-between;border-top:1px solid #5a4254;padding-top:6px;margin-top:7px;font-size:11px;color:#d6c6d2}.tag{position:absolute;right:7px;top:17px;border-radius:50%;background:#6e2636;width:22px;height:22px;display:grid;place-items:center;font-size:11px;font-weight:800;border:1px solid #d46b78}.blank{border:1px dashed #372e3c;border-radius:9px;aspect-ratio:.69;min-height:148px;display:grid;place-items:center;color:#504450;font-size:28px}.right{display:flex;flex-direction:column;gap:12px;min-width:0}.panel{background:#17151d;border:1px solid var(--border);border-radius:12px;padding:14px}.panel-title{display:flex;justify-content:space-between;align-items:center;margin:0 0 10px;font-size:13px;color:#d5b7c5;text-transform:uppercase;letter-spacing:1px;font-weight:800}.art{height:225px;border:1px dashed #725765;background:repeating-linear-gradient(45deg,#251f2a 0 14px,#201b24 14px 28px);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:#8e7787;text-align:center}.art .icon{font-size:42px;filter:grayscale(1)}.art small{max-width:240px;line-height:1.45}.panel-content{max-height:calc(100vh - 380px);min-height:230px;overflow:auto;padding-right:3px}.label{display:block;color:#bdaab8;font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin-bottom:5px}.field{width:100%;border:1px solid #4a394b;background:#241f2a;color:#f5edf2;padding:9px 10px;border-radius:7px;outline:none}.field:focus{border-color:#c06176}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.field-wrap{margin-bottom:10px}.hint{color:var(--muted);font-size:11px;line-height:1.45}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.btn{background:#793045;color:white;border:1px solid #ab4e61;border-radius:8px;padding:10px 12px;font-weight:800;font-size:12px}.btn.ghost{background:#28232d;border-color:#504051;color:#d8c8d3}.btn.danger{background:#4a2028;border-color:#8d3344}.btn:hover:not(:disabled){filter:brightness(1.2)}.empty{grid-column:1/-1;display:flex;align-items:center;justify-content:center;min-height:300px;color:var(--muted);text-align:center}.status{margin-top:10px;font-size:12px;color:#a4d5b2;min-height:15px}.footer{margin-top:9px;font-size:12px;color:#8c7b8a}.subheading{font-size:12px;color:#a995a6}.rule{margin:12px 0;border:0;border-top:1px solid var(--border)}.notice{padding:9px 10px;background:#2c242b;border-radius:7px;border:1px solid #58424b;color:#ddbbc4;font-size:12px}.wide{grid-column:1/-1}
+@media (max-width:1120px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.distribution{margin-left:0}.layout{grid-template-columns:minmax(0,1fr) 320px}}@media(max-width:780px){.app{padding:10px}.layout{grid-template-columns:1fr}.grid{grid-template-columns:repeat(3,minmax(0,1fr));max-height:480px;min-height:250px}.right{display:grid;grid-template-columns:1fr 1fr}.panel-content{max-height:none}.card{min-height:145px}.divider{display:none}}@media(max-width:510px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.right{display:flex}.brand{font-size:16px}.count{font-size:19px}.cardname{font-size:14px}}
+
+.card .symbol img{width:100%;height:100%;object-fit:contain;object-position:center center;border-radius:4px;display:block;opacity:1}.card .symbol:has(img){margin:5px 0;overflow:hidden;opacity:1;justify-content:center;align-items:center}.art:has(img){height:300px;padding:12px;overflow:hidden;background:#100e16;border-style:solid}.art img{width:100%;height:100%;object-fit:contain;object-position:center center;display:block}.detail-name{font-family:Georgia,serif;font-size:23px;font-weight:700;margin:0 0 10px;color:#fff}
+.detail-badge{display:inline-block;border:1px solid #554152;border-radius:7px;background:#291f2c;padding:5px 8px;margin:0 6px 7px 0;color:#ead8e5;font-size:12px}
+.detail-section{margin:12px 0 4px;color:#d2adb9;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.8px}
+.detail-text{white-space:pre-wrap;overflow-wrap:anywhere;color:#e8dce5;font-size:13px;line-height:1.55;margin:3px 0 10px}
+.deck-help{font-size:12px;color:#bcabb7;line-height:1.55}
+.card.in-deck{box-shadow:inset 0 0 0 1px #856452}
+#saveDeck{background:#4b765e;border-color:#73a18a}
+
+/* Alpha 0.9: exibir a carta COMPLETA, sem recorte, em todas as visualizações. */
+.card{color:#f4edf1}
+.cardname{color:#f4edf1}
+.card .stats{color:#d6c6d2}
+.card .symbol{flex:1 1 auto;min-height:0;min-width:0;aspect-ratio:auto;padding:2px;margin:5px 0;background:#0e0c13;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.card .symbol img{display:block;width:100%;height:100%;min-width:0;min-height:0;max-width:100%;max-height:100%;object-fit:contain;object-position:center;border-radius:3px}
+.card .symbol:has(img){margin:5px 0;align-items:center;justify-content:center}
+.art:has(img){height:350px;min-height:0;padding:10px;background:#0d0b12;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.art img{display:block;width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;object-position:center;aspect-ratio:auto}
+</style>
+<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="editor-polish.css"><script src="cards.js"></script><script src="cards-ui.js"></script>
+<style>.filter-menu{position:relative;z-index:20}.filter-menu summary{cursor:pointer;padding:10px 14px;border:1px solid #655261;border-radius:7px;background:#28212e}.filter-panel{position:absolute;right:0;top:44px;width:260px;padding:18px;background:#1e1923;border:1px solid #806377;border-radius:10px;box-shadow:0 12px 35px #0009;display:grid;gap:10px}.filter-panel label{color:#c6afbd;font-size:12px}.filter-panel .field{max-width:none}</style></head>
+<body>
+<div class="app">
+<header class="top">
+<button class="back" id="back" title="Voltar para o menu">←</button>
+<div class="brand">HORRORVERSE</div><div class="divider"></div>
+<div class="count" id="counter">Deck 0/30<small>Construtor de baralho</small></div>
+<div class="distribution" id="distribution"></div>
+</header>
+<main class="layout">
+<section class="left">
+<div class="toolbar"><div class="tabs"><button class="tab active" id="tabDeck">Meu deck</button><button class="tab" id="tabCollection">Coleção</button></div><input class="search" id="search" placeholder="Buscar carta..." aria-label="Buscar carta"><details class="filter-menu"><summary id="filterLabel">Filtrar cartas</summary><div class="filter-panel"><label for="filter">Tipo</label><select class="field" id="filter"><option value="all">Todos os tipos</option><option value="ser">Seres</option><option value="common">Seres comuns</option><option value="special">Seres especiais</option><option value="item">Itens</option><option value="magic">Feitiços</option></select><label for="subtypeFilter">Subtipo</label><select class="field" id="subtypeFilter"><option value="all">Todos os subtipos</option></select><button class="btn ghost" id="clearFilters" type="button">Limpar filtros</button></div></details></div>
+<div class="grid" id="grid"></div>
+<div class="footer" id="listInfo">Selecione uma carta para ver detalhes e adicioná-la ou removê-la do deck.</div><div class="actions"><button class="btn danger" id="clearDeck" type="button">✕ Esvaziar baralho</button><button class="btn ghost" id="randomDeck" type="button">⤨ Sortear baralho</button><button class="btn" id="saveDeck" type="button">Salvar baralho</button><span id="deckValid" class="hint"></span></div>
+</section>
+<aside class="right">
+<section class="panel"><h2 class="panel-title">Arte da carta <span id="artState" class="subheading">—</span></h2><div class="art" id="artPreview"><div class="icon">▧</div><small>Selecione uma carta para visualizar sua arte.</small></div></section>
+<section class="panel"><h2 class="panel-title">Informações da carta <span id="selectedId" class="subheading">—</span></h2>
+<div class="panel-content" id="details"><div class="notice">Selecione uma carta para visualizar seus dados.</div></div>
+<div class="actions"><button class="btn ghost" id="remove" disabled>− Remover do deck</button><button class="btn" id="add" disabled>+ Adicionar ao deck</button><button class="btn ghost" id="restore">Restaurar deck padrão</button></div>
+<div class="status" id="status" aria-live="polite"></div>
+</section>
+</aside>
+</main>
+</div>
+<script>
+// HORRORVERSE Alpha 0.5 — Deck Builder somente leitura.
+// Catálogo vindo exclusivamente de cards.js, não há edição de cartas neste módulo.
+const {minDeckSize,maxDeckSize,maxCopies}=HV_DATA.DEFAULT_CONFIG;
+const META={common:{name:'Ser comum',short:'COMUM',color:'#4da58a',symbol:'✦'},special:{name:'Ser especial',short:'ESPECIAL',color:'#b27dde',symbol:'☠'},item:{name:'Item amaldiçoado',short:'ITEM',color:'#d2a461',symbol:'◇'},magic:{name:'Magia / Ritual',short:'MAGIA',color:'#648dd6',symbol:'✧'}};
+let cards=[], deck=[], savedDeck=[], tab='deck',selected=null, ready=false;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const copies=id=>deck.filter(x=>x===id).length;
+const count=t=>deck.filter(id=>cards.find(c=>c.id===id)?.type===t).length;
+const valid=()=>HV_DATA.validDeck(deck);
+const canAdd=c=>c&&deck.length<maxDeckSize&&copies(c.id)<maxCopies;
+const createRandomDeck=()=>HV_DATA.randomDeck();
+function status(msg,bad=false){$('status').textContent=msg;$('status').style.color=bad?'#ffa3a9':'#a4d5b2'}
+function send(action,data={}){try{window.parent.postMessage({source:'hv-builder',action,...data},'*')}catch{}}
+function toCard(c){return {...c,kind:['common','special'].includes(c.type)?'ser':c.type==='item'?'item':'magia',rarity:c.type==='common'?'comum':'especial'}}
+function subtypeOf(c){return ['common','special'].includes(c.type)?c.affinity:c.cardSubtype||({field:'Campo',reaction:'Reação'}[c.subtype]||'Normal')}
+function updateSubtypes(){const f=$('filter').value;const values=[...new Set(cards.filter(c=>f==='all'||c.type===f||(f==='ser'&&['common','special'].includes(c.type))).map(subtypeOf).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));$('subtypeFilter').innerHTML='<option value="all">Todos os subtipos</option>'+values.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');$('filterLabel').textContent='Filtrar cartas';}
+function renderHeader(){
+ $('counter').innerHTML=`Deck ${deck.length}/${maxDeckSize}<small>Construtor de baralho</small>`;
+ $('distribution').innerHTML=Object.entries(META).map(([t,m])=>`<span class="pill" style="border-left:3px solid ${m.color}">${m.name}<strong style="color:${m.color}">${count(t)}</strong></span>`).join('');
+ $('deckValid').textContent=valid()?'✓ Baralho válido · até '+maxCopies+' cópias por carta':'Mínimo de '+minDeckSize+' cartas para jogar';
+}
+function renderGrid(){
+ renderHeader();$('tabDeck').classList.toggle('active',tab==='deck');$('tabCollection').classList.toggle('active',tab==='collection');
+ const q=$('search').value.toLocaleLowerCase('pt-BR').trim(),f=$('filter').value;
+ const base=tab==='deck'?[...new Set(deck)].map(id=>cards.find(c=>c.id===id)).filter(Boolean):cards;
+ const filtered=base.filter(c=>(f==='all'||c.type===f||(f==='ser'&&['common','special'].includes(c.type)))&&($('subtypeFilter').value==='all'||subtypeOf(c)===$('subtypeFilter').value)&&c.name.toLocaleLowerCase('pt-BR').includes(q));
+ $('grid').innerHTML=filtered.length?filtered.map((c,i)=>{const number=copies(c.id);return `<button type="button" class="card ${selected===c.id?'selected':''} ${number?'in-deck':''}" data-id="${esc(c.id)}" style="--entry:${Math.min(i,12)*20}ms" aria-label="${esc(c.name)}">${window.HV_UI.markup(toCard(c))}${number?`<div class="tag">${number}</div>`:''}</button>`}).join(''):'<div class="empty">Nenhuma carta encontrada nessa visualização.</div>';
+ $('listInfo').textContent=tab==='deck'?`No baralho: ${deck.length}/${maxDeckSize} cartas. Selecione uma carta para visualizar ou remover.`:`Coleção: ${cards.length} modelos disponíveis. Selecione para adicionar ao deck.`;
+ document.querySelectorAll('.card').forEach(b=>b.addEventListener('click',()=>{selected=b.dataset.id;renderGrid();renderDetails()}));
+}
+function renderDetails(){
+ const c=cards.find(c=>c.id===selected);$('selectedId').textContent=c?'HV-'+String(cards.indexOf(c)+1).padStart(2,'0'):'—';$('add').disabled=!canAdd(c);$('remove').disabled=!c||!copies(c.id);
+ if(!c){$('artState').textContent='—';$('artPreview').innerHTML='<div class="icon">▧</div><small>Nenhuma carta selecionada.</small>';$('details').innerHTML='<div class="notice">Selecione uma carta para visualizar suas informações. Os atributos são definidos pelo catálogo do jogo e não podem ser alterados aqui.</div>';return}
+ const m=META[c.type]||META.magic;
+ $('artState').textContent=c.art?'ARTE ORIGINAL':'SELO DO ABISMO';
+ $('artPreview').innerHTML=window.HV_UI.markup(toCard(c));
+ const stats=['common','special'].includes(c.type)?`<div><span class="detail-badge">ATK ${Number(c.atk)||0}</span><span class="detail-badge">DEF ${Number(c.def)||0}</span><span class="detail-badge">TERROR ${Number(c.terror)||0}</span></div>`:'';
+ const req=c.condition?`<div class="detail-section">Requisitos de invocação</div><p class="detail-text">${esc(c.condition)}</p>`:'';
+ $('details').innerHTML=`<h3 class="detail-name">${esc(c.name)}</h3><span class="detail-badge" style="border-color:${m.color}">${m.name}</span>${c.cardSubtype?`<span class="detail-badge">${esc(c.cardSubtype)}</span>`:''}${c.affinity?`<span class="detail-badge">${esc(c.affinity)}</span>`:''}<span class="detail-badge">No deck: ${copies(c.id)}/${maxCopies}</span>${c.periculosidade!==undefined?`<span class="detail-badge">Periculosidade ${c.periculosidade}</span>`:''}${stats}${req}<div class="detail-section">Descrição / habilidades</div><p class="detail-text">${esc(c.effect||'Nenhuma descrição cadastrada.')}</p><hr class="rule"><p class="deck-help">As informações são somente para consulta. Para construir seu baralho, utilize os botões abaixo; nenhum atributo ou habilidade pode ser modificado nesta tela.</p>`;
+}
+function redraw(){renderGrid();renderDetails()}
+function change(add){const c=cards.find(x=>x.id===selected);if(!c)return;if(add){if(!canAdd(c))return;deck.push(c.id);status('Carta adicionada.')}else{const index=deck.indexOf(c.id);if(index<0)return;deck.splice(index,1);status('Carta removida.')}redraw()}
+function receive(msg){if(!msg||msg.source!=='hv-game'||msg.action!=='init'||!Array.isArray(msg.cards)||!Array.isArray(msg.deck))return;
+ cards=msg.cards.filter(c=>c&&typeof c.id==='string'&&typeof c.name==='string'&&META[c.type]).map(c=>({...c}));
+ const ids=new Set(cards.map(c=>c.id));
+ savedDeck=msg.deck.filter(id=>ids.has(id));
+ deck=HV_DATA.validDeck(msg.draft,{draft:true})?msg.draft.slice():savedDeck.slice();
+ ready=true;selected=cards.find(c=>c.id===selected)?.id||deck[0]||cards[0]?.id||null;
+ tab='deck';updateSubtypes();redraw();status('Deck Builder conectado! Selecione as cartas e salve um baralho válido.');
+}
+window.addEventListener('message',e=>receive(e.data));
+$('tabDeck').onclick=()=>{tab='deck';redraw()};$('tabCollection').onclick=()=>{tab='collection';redraw()};
+$('search').oninput=renderGrid;$('filter').onchange=()=>{updateSubtypes();renderGrid()};$('subtypeFilter').onchange=()=>{renderGrid();$('filterLabel').textContent=$('subtypeFilter').value==='all'?'Filtrar cartas':$('subtypeFilter').value};$('clearFilters').onclick=()=>{$('filter').value='all';updateSubtypes();renderGrid();$('filterLabel').textContent='Filtrar cartas'};
+$('add').onclick=()=>change(true);$('remove').onclick=()=>change(false);
+$('restore').onclick=()=>{deck=savedDeck.slice();tab='deck';redraw();status('Baralho restaurado para a última versão salva.')};
+$('clearDeck').onclick=()=>{if(!deck.length){status('Seu baralho já está vazio.');return}if(!confirm('Remover todas as cartas do baralho atual? O baralho salvo continuará intacto até você salvar outro.'))return;deck=[];tab='collection';redraw();status('Baralho esvaziado. Escolha novas cartas ou use Sortear baralho.')};
+$('randomDeck').onclick=()=>{const result=createRandomDeck();if(!result){status('Não há cartas suficientes no catálogo para sortear um baralho válido.',true);return}deck=result;tab='deck';$('search').value='';$('filter').value='all';updateSubtypes();selected=deck[0];redraw();status('Baralho aleatório válido! Confira as cartas e clique em Salvar baralho para usar.')};
+$('saveDeck').onclick=()=>{if(!valid()){status('Escolha entre 20 e 30 cartas, com até 2 cópias de cada.',true);return}send('save',{deck:deck.slice()});status('✓ Baralho enviado para salvamento no jogo.')};
+$('back').onclick=()=>send('close',{draft:deck.slice()});
+renderHeader();renderDetails();send('ready');
+</script></body></html>
