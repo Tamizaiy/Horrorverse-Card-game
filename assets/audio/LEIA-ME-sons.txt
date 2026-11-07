@@ -1,0 +1,45 @@
+EFEITOS SONOROS - WAV RENOMEADOS
+
+Formato: WAV PCM 16-bit, 48.000 Hz, 2 canais (estereo).
+Todos os arquivos foram mantidos com sua duracao original; sem normalizacao intencional de volume.
+
+DESCRICOES
+01_Robo_Mecanismo_Eletronico.wav
+  Ruido curto de maquina robotica com movimentos e cliques eletronicos.
+  Duracao: 1.82 s
+  Arquivo de origem: 268372__headphaze__robots-and-electromechanics-v2-126.wav
+
+02_Moedas_Retro_Coletadas.wav
+  Toques agudos de moeda ou pontuacao, com timbre de videogame retro.
+  Duracao: 1.53 s
+  Arquivo de origem: 334756__dneproman__ma_sfx_snes_coins_2.wav
+
+03_PowerUp_Saltitante.wav
+  Sequencia sintetica saltitante e ascendente, lembrando um bonus ou power-up.
+  Duracao: 1.20 s
+  Arquivo de origem: 478343__joao_janz__bouncing-power-up-1_4.wav
+
+04_Brilho_Digital_Agudo.wav
+  Blip/carrilhao eletronico bem agudo e curto com ressonancia.
+  Duracao: 1.35 s
+  Arquivo de origem: 612388__thehorsevalse__sci-fi_alien_click_blip_a_chime_short_high_variation_1d_sfx0030.wav
+
+05_Blip_Alien_Grave_Variacao_A.wav
+  Clique digital sci-fi de tom grave, como um toque percussivo sintetico.
+  Duracao: 1.35 s
+  Arquivo de origem: 612402__thehorsevalse__sci-fi_alien_click_blip_b_knock_short_low_variation_3b_sfx0048.wav
+
+06_Blip_Alien_Grave_Variacao_B.wav
+  Outra variacao de clique digital sci-fi grave e breve.
+  Duracao: 1.35 s
+  Arquivo de origem: 612408__thehorsevalse__sci-fi_alien_click_blip_b_knock_short_low_variation_3d_sfx0050.wav
+
+07_Quebra_Metalica_Ressonante.wav
+  Estalo de quebra com timbre metalico brilhante e cauda ressonante.
+  Duracao: 2.61 s
+  Arquivo de origem: 877706__zenosounds__steel-resonance-break.wav
+
+08_Impacto_Grave_Com_Eco.wav
+  Batida forte e grave com prolongamento reverberante.
+  Duracao: 6.00 s
+  Arquivo de origem: 877830__cb9382__loud-funny-hit-original.flac
