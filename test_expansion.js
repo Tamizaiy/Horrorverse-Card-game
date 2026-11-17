@@ -1,4 +1,4 @@
-const assert=require('node:assert/strict');require('./cards.js');require('./engine.js');require('./expansion.js');
+const assert=require('node:assert/strict');require('./cards.js');require('./engine.js');require('./expansion.js');require('./alpha23.js');
 const def=id=>HV_DATA.CARD_LIBRARY.find(c=>c.id===id);
 const game=()=>{const g=new HorrorverseEngine({deferChoices:true,winByExtermination:false});g.players.forEach(p=>{p.hand=[];p.grave=[];p.field.ser.fill(null);p.field.support.fill(null)});return g;};
 const add=(g,id,owner=0,zone='ser')=>{const c=g.clone(def(id),owner);if(['hand','grave'].includes(zone))g.p(owner)[zone].push(c);else g.p(owner).field[zone][g.p(owner).field[zone].indexOf(null)]=c;return c;};
@@ -46,4 +46,4 @@ for(const card of HV_DATA.CARD_LIBRARY.filter(c=>c.effects?.some(e=>e.op==='CUST
  for(let i=0;i<4;i++)add(g,i%2?'leitura_tatica':'vigia',0,'hand');add(g,'leitura_tatica',0,'grave');add(g,'reporter_inexplicavel',0,'grave');
  g.runEffects(card.effects,source.uid,human.uid,0);g.drainChoices();assert.equal(g.choices.length,0,card.name);assert(g.fieldSer().every(c=>g.fear(c)>=0));
 }
-console.log('OK: 91 cards; rivals; Zombie targets; Human costs; reactions; recovery; counters; round timing; every custom effect.');
+console.log('OK: 129 cards; rivals; Zombie targets; Human costs; reactions; recovery; counters; round timing; every custom effect.');

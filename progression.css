@@ -1,0 +1,43 @@
+[hidden]{display:none!important}
+.menu-wallet{margin-left:14px;display:flex;gap:7px;align-items:center;color:#f9dbc1;white-space:nowrap;border:1px solid #804844;background:#25151a;padding:6px 12px;border-radius:5px;font-size:13px}
+.menu-wallet img,.reward-total img{width:21px;height:30px;object-fit:contain}
+.nav-item[data-screen-go="story"]:before{content:"✦"}.nav-item[data-screen-go="shop"]:before{content:"◇"}.nav-item[data-screen-go="history"]:before{content:"≡"}.nav-item:before{color:#d9ac80;font-size:20px}
+.board .phase-bar{align-self:center}
+.phase-bar{width:min(100%,720px);padding:2px 4px;gap:3px;background:linear-gradient(90deg,transparent,#713e31 25%,#d88a52 50%,#713e31 75%,transparent) center/100% 1px no-repeat}
+.phase-bar>*{display:flex;align-items:center;justify-content:center;gap:5px;min-height:25px;font:600 clamp(8px,1.1vw,15px)/1.06 Georgia,serif;color:#ecceb3;border:1px solid #9c664e;border-radius:12px 8px;background:linear-gradient(#3d2225,#24171e);box-shadow:inset 0 0 7px #0b070a,0 0 0 2px #180d12}
+.phase-bar>i,.phase-bar i{font-style:normal;color:#dc9d75}
+.phase-bar>*[aria-current="step"]{border-color:#ffc588;color:#fff0cd;background:linear-gradient(#72422e,#40221d);box-shadow:inset 0 0 8px #c3743f,0 0 14px #f39c5b}
+.phase-notice,.chain-notice{position:fixed;z-index:135;left:50%;top:44%;transform:translate(-50%,-50%);pointer-events:none;width:min(90vw,600px);padding:13px 16px;text-align:center;color:#ffead2;font:700 clamp(22px,4vw,42px)/1.15 Georgia,serif;background:linear-gradient(90deg,transparent,#260f18 18%,#39181e 50%,#260f18 82%,transparent);border-block:1px solid #b57959;text-shadow:0 0 12px #e97954}
+.chain-notice{top:32%;width:max-content;max-width:95vw;font-size:clamp(16px,3vw,32px);color:#ffe0a2}
+.story-scene{position:relative;min-height:clamp(430px,70vh,650px);border:1px solid #967254;border-radius:8px;overflow:hidden;padding:24px;background:#1d1118 center/cover}
+.story-scene{display:flex;flex-direction:column;justify-content:space-between;background-position:center}
+.story-dialogue,.tutorial-tip{display:flex;align-items:center;gap:12px;padding:12px;background:#1d1019f2 url(assets/progression/dialogue.webp) center/100% 100% no-repeat;border:1px solid #9a5a50;border-radius:8px}
+.story-dialogue img{width:clamp(80px,13vw,160px);max-height:175px;object-fit:contain}
+.story-dialogue p,.tutorial-tip p{color:#ffead9}
+.tutorial-tip{display:block;position:fixed;z-index:6;right:10px;top:67px;width:min(260px,40vw);font-size:13px;pointer-events:none;background:#1d1019f5}
+.tutorial-tip p{margin:4px 0}
+.reward-total{display:flex;align-items:center;justify-content:center;gap:8px;font:700 23px Georgia,serif;color:#ffbb9f}
+.bonus-lines{list-style:none;padding:0;text-align:left}.bonus-lines li,.duel-details div{display:flex;gap:12px;justify-content:space-between;padding:5px 0;border-bottom:1px solid #8a5e4540}.bonus-lines b{color:#fcbc87}.duel-details{text-align:left;font-size:.86rem}
+#historyList details{padding:12px;border:1px solid #775341;margin:8px 0}#historyList summary{cursor:pointer}
+@media(max-width:850px){.menu-nav{padding-top:12px;gap:3px}.tutorial-tip{top:64px;right:8px}}
+@media(max-width:580px){.menu-wallet{margin-left:0;padding:4px 6px;font-size:10px}.menu-wallet img{width:10px;height:18px}.phase-bar i{display:none}.story-scene{padding:10px}.tutorial-tip{width:min(250px,62vw);font-size:11px;top:56px}.menu-nav{overflow-x:auto}}
+.phase-bar>*:first-child{border-radius:15px 8px 8px 15px}.phase-bar>*:last-child{border-radius:8px 15px 15px 8px}
+@media(max-width:580px){.menu-nav .nav-item{flex-shrink:0;min-width:39px}.menu-top{gap:7px}}
+.tutorial-tip strong{color:#ffd2ad}.duel-details dd{margin:0;text-align:right}
+@media(min-width:851px){.menu-nav{overflow-y:auto}}
+.nav-item:disabled,.mode-card:disabled{cursor:default;color:#ae9b8c}
+.mode-card:disabled:hover{background:linear-gradient(90deg,#2018189c,#1d17164d)}
+.coming-soon-label{color:#d8b991;font-size:10px}
+.mode-card .coming-soon-label{display:block}
+.account-settings{max-width:670px;margin-top:28px;padding-top:18px;border-top:1px solid var(--line)}
+.account-settings h3{margin:0 0 12px;font:20px Georgia,serif;color:#e4d7c4}
+@media(max-width:850px){
+ .menu-nav{overflow:auto}
+ .nav-item.coming-soon{gap:3px;flex-direction:column}
+ .nav-item.coming-soon span,.nav-item.coming-soon .coming-soon-label{display:block;font-size:8px}
+ .nav-item.coming-soon .coming-soon-label{margin:0;padding:0;border:0}
+}
+@media(max-width:580px){
+ .menu-nav{justify-content:flex-start}
+ .nav-item.coming-soon{gap:1px}
+}

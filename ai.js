@@ -33,6 +33,7 @@ class Tactics{
    for(const c of p.field.support.filter(Boolean)){
     if(c.subtype==='field')v+=c.id==='circulo_colapso'?0:1;
     else if(c.subtype==='reaction')v+=this.p.hand+1.5;
+    else if(c.continuousActive)v+=this.p.hand+1;
     else if(!c.__activated)v+=this.p.hand-.15; // prepared cards retain option value
    }
    if(!beings.length){const damage=g.allSer(1-owner).reduce((s,a)=>s+g.directDamage(g.battleAtk(a)),0);v-=Math.min(20,damage*3);}
@@ -40,7 +41,7 @@ class Tactics{
   };
   return sideValue(this.actor)-sideValue(1-this.actor);
  }
- fork(){const g=Object.create(Object.getPrototypeOf(this.g));for(const [k,v] of Object.entries(this.g)){if(['choices','afterChoices'].includes(k))g[k]=[];else g[k]=structuredClone(v);}g.cfg.deferChoices=true;
+ fork(){const g=Object.create(Object.getPrototypeOf(this.g));for(const [k,v] of Object.entries(this.g)){if(['choices','afterChoices'].includes(k))g[k]=[];else if(k!=='phaseJob')g[k]=structuredClone(v);}g.cfg.deferChoices=true;g.cfg.pausePhases=false;
   // Unknown cards do not influence planning. No access to opponent hand or deck order.
   for(let owner=0;owner<2;owner++){
    g.p(owner).deck=g.p(owner).deck.map((c,i)=>({uid:'unknownDeck'+owner+'_'+i,id:'unknown',kind:'ser',name:'Carta desconhecida',owner,controller:owner,atk:0,def:0,terror:1,effects:[]}));
@@ -53,24 +54,25 @@ class Tactics{
  effectTargets(e,g=this.g){return g.needsTarget(e)?g.targets(e,this.actor):[null];}
  actions(known=null){const g=this.g,p=g.p(this.actor),out=[];if(g.over||g.pending||g.active!==this.actor)return out;
   const commonSlot=p.field.ser.indexOf(null),supportSlot=p.field.support.indexOf(null);
-  for(const c of p.hand){if(c.id==='unknown'||known&&!known.has(c.uid))continue;
+  const main=!g.cfg.turnPhases||g.phase==='main',combat=!g.cfg.turnPhases||g.phase==='combat';
+  if(main)for(const c of p.hand){if(c.id==='unknown'||known&&!known.has(c.uid))continue;
    if(c.kind!=='ser'){if(supportSlot>=0&&!(c.subtype==='field'&&p.field.support.some(x=>x?.id===c.id)))out.push({kind:'place',uid:c.uid,slot:supportSlot,opts:{}});continue;}
    if(commonSlot<0)continue;
    if(c.rarity==='comum'){if(p.commonUsed>=g.cfg.commonSummonsPerTurn)continue;}else if(p.specialUsed>=g.cfg.specialSummonsPerTurn)continue;
-   const req=c.summon||{},opts={};let legal=true;
-   for(const [key,pool] of Object.entries({sacrifices:g.allSer(this.actor),items:p.field.support.filter(x=>x?.kind==='item'),spells:p.field.support.filter(x=>x?.kind==='magia'),discard:p.hand.filter(x=>x!==c)})){
-    const count=req[key]||0;if(pool.length<count){legal=false;break;}opts[key]=pool.slice().sort((a,b)=>key==='sacrifices'?this.threat(a)-this.threat(b):this.handValue(a)-this.handValue(b)).slice(0,count).map(x=>x.uid);
+   const req=c.summon||{},opts={};let legal=!req.onlyBy&&p.sanity>(req.sanity||0);
+   for(const [key,pool] of Object.entries(g.summonMaterials?.(c,this.actor)||{sacrifices:g.allSer(this.actor),items:p.field.support.filter(x=>x?.kind==='item'),spells:p.field.support.filter(x=>x?.kind==='magia'),discard:p.hand.filter(x=>x!==c)})){
+    const count=req[key]||0;if(pool.length<count){legal=false;break;}opts[key]=pool.slice().sort((a,b)=>key==='sacrifices'?(req.sacrificeAffinity?Number(b.affinity===req.sacrificeAffinity)-Number(a.affinity===req.sacrificeAffinity):0)||this.threat(a)-this.threat(b):this.handValue(a)-this.handValue(b)).slice(0,count).map(x=>x.uid);
    }
    if(!legal||g.fearTotal()<Math.max(req.fearSpend||0,req.fearRequired||0))continue;
-   opts.fearCosts=g.autoFearPayment(req.fearSpend||0,this.actor);if(req.zeroAllyDef){const a=g.allSer(this.actor).sort((a,b)=>g.stat(a,'def')-g.stat(b,'def'))[0];if(!a)continue;opts.defCost=a.uid;}
+   opts.fearCosts=g.autoFearPayment(req.fearSpend||0,this.actor,req);if(req.zeroAllyDef){const a=g.allSer(this.actor).sort((a,b)=>g.stat(a,'def')-g.stat(b,'def'))[0];if(!a)continue;opts.defCost=a.uid;}
    opts.summonTargets={};for(const {effect,index,ids} of g.summonChoices(c,this.actor,opts)){opts.summonTargets[index]=ids.slice().sort((a,b)=>this.targetScore(effect,b)-this.targetScore(effect,a)).slice(0,effect.maxTargets||1);}
    out.push({kind:'place',uid:c.uid,slot:commonSlot,opts});
   }
-  for(const c of p.field.support.filter(Boolean))if(!['reaction','field'].includes(c.subtype)&&!c.__activated&&g.effectAvailable(c,this.actor))for(const target of this.effectTargets(c.effects?.[0]))out.push({kind:'activate',uid:c.uid,target});
+  if(main)for(const c of p.field.support.filter(Boolean))if(!['reaction','field'].includes(c.subtype)&&!c.__activated&&g.effectAvailable(c,this.actor))for(const target of this.effectTargets(c.effects?.[0]))out.push({kind:'activate',uid:c.uid,target});
   for(const c of g.allSer(this.actor)){
    if(c.sealedUntil>=g.turn)continue;const e=g.manualEffect(c);
-   if(e&&!g.used(c,c.effects.indexOf(e))&&g.effectAvailable(c,this.actor)&&g.fearTotal()>=(e.fearSpend||0))for(const target of this.effectTargets(e))out.push({kind:'ability',uid:c.uid,target,costs:g.autoFearPayment(e.fearSpend||0,this.actor)});
-   if(!c.hasAttacked){for(const t of g.allSer(1-this.actor))if(g.battleAtk(c)>g.stat(t,'def'))out.push({kind:'attack',uid:c.uid,target:t.uid});if(g.canDirectAttack(c.uid))out.push({kind:'attack',uid:c.uid,target:null});}
+   if(main&&e&&(e.repeatable||!g.used(c,c.effects.indexOf(e)))&&g.effectAvailable(c,this.actor)&&g.fearTotal()>=(e.fearSpend||0))for(const target of this.effectTargets(e))out.push({kind:'ability',uid:c.uid,target,costs:g.autoFearPayment(e.fearSpend||0,this.actor,e,target)});
+   if(combat){if(!c.hasAttacked)for(const t of g.allSer(1-this.actor))if(g.battleAtk(c)>g.stat(t,'def'))out.push({kind:'attack',uid:c.uid,target:t.uid});if(g.canDirectAttack(c.uid))out.push({kind:'attack',uid:c.uid,target:null});}
   }return out;
  }
  targetScore(e,id){const c=this.g.find(id)?.card;if(!c)return 0;const friendly=c.controller===this.actor;
@@ -83,7 +85,10 @@ class Tactics{
  choice(c){const g=this.g;
   if(c.kind==='transfer'){const pairs=[];for(const id of c.ids){const from=g.find(id)?.card;if(!from)continue;for(const to of g.fieldSer())if(from!==to)pairs.push({from:id,to:to.uid,amount:Math.min(2,g.fear(from)),score:this.fearDestination(to)-this.fearDestination(from)});}pairs.sort((a,b)=>b.score-a.score);return pairs[0]?.score>0?pairs[0]:null;}
   if(c.kind!=='pick'){const ids=c.ids.slice().sort((a,b)=>this.targetScore(c.e,b)-this.targetScore(c.e,a));return {target:ids[0]};}
-  if(!c.max)return {values:[]};const label=c.label||'',cards=c.options.map(o=>o.card),action=c.card.effects?.[0]?.action;
+  if(!c.max)return {values:[]};
+  if(c.context?.sanityLoss)return {values:c.context.sanityLoss>=g.p(this.actor).sanity||c.context.sanityLoss>1?c.ids.slice(0,1):[]};
+  if(c.context?.negateSpell)return {values:['grande_impacto','drenagem_almas','corte','metamorfose_corrupta'].includes(c.context.negateSpell)?c.ids.slice(0,1):[]};
+  if(c.card.id==='sistema_cambio_oculto')return {values:g.allSer(this.actor).length<2?c.ids.slice(0,1):[]};const label=c.label||'',cards=c.options.map(o=>o.card),action=c.card.effects?.[0]?.action;
   if(c.options.some(o=>o.card.id==='veu_lucidez')){let harm=0;for(const gain of c.context?.gains||[]){const x=g.find(gain.uid)?.card;if(!x)continue;const old=g.fear(x),before=this.fearValue(x);x.counters.medo=old+gain.amount;harm+=before-this.fearValue(x);x.counters.medo=old;if(x.id==='testemunha'&&!g.used(x,0))harm-=this.p.hand;}return {values:harm>1.5?c.ids.slice(0,1):[]};}
   if(cards.every(x=>/^\d+$/.test(x.uid)))return {values:[cards.at(-1).uid]};
   const score=x=>{
@@ -103,10 +108,25 @@ class Tactics{
   for(const uid of p.reactions){const c=g.find(uid)?.card;if(c?.id==='desvio_alvo'){for(const t of g.allSer(p.responder))if(t.uid!==p.targetUid)options.push({kind:'respond',uid,redirect:t.uid});}else options.push({kind:'respond',uid});}
   const ranked=options.map(a=>{const copy=this.fork();try{copy.respond(a.uid,a.redirect);this.settle(copy);return {...a,score:this.evaluate(copy)-(a.uid?1:0)};}catch{return {...a,score:-Infinity};}}).sort((a,b)=>b.score-a.score);return ranked[0]||{uid:null};
  }
- best(){const baseline=this.evaluate(),known=new Set(this.g.p(this.actor).hand.map(c=>c.uid));const first=this.actions().map(a=>{const state=this.simulate(a);return state?{a,state,score:this.evaluate(state)-.2}:null;}).filter(Boolean).sort((a,b)=>b.score-a.score);
+ combatValue(state){
+  if(state.phase!=='main'||!state.cfg.turnPhases||state.over)return this.evaluate(state);
+  const fight=this.at(state).fork();
+  fight.startCombat();
+  const planner=this.at(fight),rank=a=>{
+   const attack=fight.battleAtk(fight.find(a.uid).card),target=fight.find(a.target)?.card;
+   if(!target)return fight.directDamage(attack)*5;
+   const damage=attack-fight.stat(target,'def');
+   return damage+(damage>=fight.remainingTerror(target)&&!target.shields?10:0);
+  };
+  const attacks=planner.actions().sort((a,b)=>rank(b)-rank(a)).slice(0,3);
+  let value=this.evaluate(fight);
+  for(const a of attacks){const result=planner.simulate(a);if(result)value=Math.max(value,this.evaluate(result));}
+  return value;
+ }
+ best(){const baseline=this.combatValue(this.g),known=new Set(this.g.p(this.actor).hand.map(c=>c.uid));const first=this.actions().map(a=>{const state=this.simulate(a);return state?{a,state,score:this.evaluate(state)-.2}:null;}).filter(Boolean).sort((a,b)=>b.score-a.score);
   // Keep preparation moves in the beam: useful spells often need place -> activate.
   const beam=[...first.slice(0,this.p.beam),...first.filter(x=>x.a.kind==='place'&&x.state.find(x.a.uid)?.card.kind!=='ser')];
-  for(const item of beam){if(item.state.over)continue;const next=this.at(item.state);for(const a of next.actions(known)){const s=next.simulate(a);if(s)item.score=Math.max(item.score,this.evaluate(s)-.5);}}
+  for(const item of new Set(beam)){if(item.state.over)continue;item.score=Math.max(item.score,this.combatValue(item.state)-.2);const next=this.at(item.state);for(const a of next.actions(known)){const s=next.simulate(a);if(s)item.score=Math.max(item.score,this.evaluate(s)-.5);}}
   first.sort((a,b)=>b.score-a.score);return first[0]?.score>baseline+.05?{...first[0].a,score:first[0].score-baseline}:null;
  }
 }

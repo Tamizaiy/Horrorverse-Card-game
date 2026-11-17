@@ -1,4 +1,6 @@
-# HORRORVERSE — Patch 2.2 Multiplayer LAN
+# HORRORVERSE — Patch 2.3.3 Multiplayer LAN
+
+O Duelo em LAN está desativado na Alpha 2.3.4. Os passos abaixo se aplicam à Alpha 2.3.3.
 
 O menu mantém Contra CPU e Multiplayer no mesmo computador. A terceira opção, Multiplayer LAN, conecta dois navegadores ao servidor local.
 
@@ -16,7 +18,7 @@ Para configurar sem o iniciador: variável HV_NETLIFY_ORIGIN com a URL HTTPS e `
 
 ## Dois jogadores
 
-1. Ambos abrem a versão 2.2 do site no Netlify, na mesma rede do servidor.
+1. Ambos abrem a versão 2.3.3 do site no Netlify, na mesma rede do servidor.
 2. Cada um escolhe seu baralho no Deck Builder.
 3. Na opção Multiplayer LAN, informe o endereço IP:porta exibido no servidor e seu nome. Use o IP da máquina servidora, não localhost nos outros computadores.
 4. O primeiro clica Criar sala e compartilha o código de seis caracteres.
@@ -39,7 +41,7 @@ Não é necessário configurar encaminhamento de portas no roteador para uma par
 
 ## Publicar no GitHub / Netlify
 
-Envie o conteúdo da pasta Horrorverse_Alpha22 para a raiz do repositório. O index.html precisa estar na pasta de publicação. O netlify.toml já configura publish="."; não há compilação ou comando de build necessário. Use a mesma versão 2.2 no site e na pasta do servidor. A configuração particular lan-server/config.json é ignorada pelo Git.
+Envie o conteúdo da pasta Horrorverse_Alpha233 para a raiz do repositório. O index.html precisa estar na pasta de publicação. O netlify.toml já configura publish="."; não há compilação ou comando de build necessário. Use a mesma versão 2.3.3 no site e na pasta do servidor. A configuração particular lan-server/config.json é ignorada pelo Git.
 
 As opções contra CPU e no mesmo computador continuam abrindo normalmente, inclusive sem iniciar o servidor LAN.
 

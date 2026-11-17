@@ -1,0 +1,60 @@
+/* Keep the shape of the foil edges visible over the shop's wood. */
+.booster-wrapper{clip-path:polygon(4.3% 1.2%,95.7% 1.2%,95.7% 7%,94% 12%,94% 87%,95.7% 93%,95.7% 98.4%,4.3% 98.4%,4.3% 93%,6% 87%,6% 12%,4.3% 7%)}
+#shopScreen{position:fixed;inset:0;z-index:10;overflow:auto;background:#110b0e;color:#f7decb}
+.shop-stage{position:relative;width:100%;min-height:100%;height:100%;isolation:isolate;background:#170d10 url(assets/progression/shop.webp) center/100% 100% no-repeat;animation:shop-enter .36s ease-out both}
+.shop-stage:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#10070ed9,transparent 20%,transparent 64%,#160913aa);z-index:-1}
+.shop-top{position:absolute;inset:0 0 auto;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;padding:clamp(14px,3vw,30px) 4%;z-index:3}
+.shop-top h1{font:600 clamp(20px,3vw,46px)/1 Georgia,serif;color:#ffe4c2;text-shadow:0 3px 14px black;margin:0;text-align:center}
+#shopBack{justify-self:start;color:#ffe1c9;padding:9px 12px;background:#1c1016dc;border:1px solid #996652;border-radius:5px}
+.shop-wallet{justify-self:end;display:flex;align-items:center;gap:7px;padding:6px 12px;background:#1c1016ee;border:1px solid #996652;border-radius:5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.shop-wallet img{height:28px;width:18px;object-fit:contain}
+.shop-packs{position:absolute;z-index:2;top:23%;left:29%;width:42%;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:start;gap:clamp(4px,.6vw,10px)}
+.shop-pack{position:relative;min-width:0;display:flex;flex-direction:column;align-items:center;background:none;color:#ffe4cc;border:0;padding:0 2px;cursor:pointer;text-align:center;font-family:Georgia,serif}
+.shop-pack:before{content:"";position:absolute;top:-8px;left:calc(50% - 3px);width:6px;height:13px;border:1px solid #99836b;border-radius:4px;background:#2e211b;box-shadow:0 1px 3px #000}
+.shop-pack img{width:min(100%,21vh);aspect-ratio:2/3;object-fit:contain;transition:transform .2s ease,filter .2s ease;transform-origin:50% 4%;filter:brightness(.9)}
+.shop-pack:is(:hover,:focus-visible) img{transform:translateY(-3px) scale(1.045);filter:brightness(1.13)}
+.shop-pack[aria-pressed=true] img{transform:translateY(-3px);filter:brightness(1.1) saturate(1.22)}
+.shop-pack span{display:grid;gap:3px;width:100%;margin-top:4px;padding:5px 4px;background:#160b10e8;border:1px solid #81513b;border-radius:4px;line-height:1.12;font-size:clamp(10px,1.25vw,17px)}
+.shop-pack[aria-pressed=true] span{border-color:#edaf79;box-shadow:0 0 15px #c54d2a70}
+.shop-pack small{font:500 clamp(8px,.9vw,12px)/1.1 'Segoe UI',sans-serif;color:#efbfa4}
+.shop-vendor{position:absolute;z-index:1;bottom:25%;left:4%;width:28%;height:57%;object-fit:contain;object-position:bottom center;pointer-events:none;filter:drop-shadow(0 8px 10px #0009)}
+.shop-vendor.sale{animation:vendor-sale .48s ease-out}
+.shop-register{position:absolute;top:60%;left:80%;width:12%;height:10%;pointer-events:none}
+.shop-dialogue,.shop-checkout{box-sizing:border-box;position:absolute;z-index:2;bottom:clamp(32px,6vh,64px);padding:13px 16px;background:#1c1018f2;border:1px solid #976051;border-radius:7px;box-shadow:0 10px 32px #0008}
+.shop-dialogue{left:4%;width:min(43%,510px);font:500 clamp(14px,1.6vw,20px)/1.3 Georgia,serif}
+.shop-dialogue strong{color:#e8a981}.shop-dialogue p{margin:5px 0 0}
+.shop-checkout{right:4%;width:min(42%,420px);display:grid;gap:8px}
+.shop-checkout h2{margin:0;font:600 clamp(18px,2vw,27px)/1.1 Georgia,serif}
+.shop-checkout p{margin:0;color:#e7bcaa;font-size:13px}
+.shop-checkout #shopConfirm{justify-self:start}
+.shop-quantity{display:flex;align-items:center;gap:7px}
+.shop-quantity label{margin-right:6px;font-size:13px}
+.shop-quantity button,.shop-quantity input{width:34px;height:32px;text-align:center;border:1px solid #9b6b56;border-radius:4px;background:#2b1a23;color:#fce3cf}
+.shop-quantity button{cursor:pointer;font-size:18px}.shop-quantity button:disabled{opacity:.45;cursor:default}
+.shop-quantity input{width:46px;appearance:textfield}
+.shop-quantity input::-webkit-inner-spin-button{appearance:none}
+.shop-status{position:absolute;z-index:2;bottom:7px;right:4%;margin:0;max-width:91%;font-size:13px;color:#ffd6ba;text-shadow:0 1px 7px black}
+#shopParticles{position:fixed;inset:0;z-index:4;pointer-events:none}
+.falling-rubedio{position:absolute;width:14px;height:21px;object-fit:contain;opacity:0;filter:drop-shadow(0 0 6px #ff5236);animation:rubedio-drop .78s ease-in both}
+@keyframes shop-enter{from{opacity:0}to{opacity:1}}
+@keyframes vendor-sale{0%{transform:translateY(4px) scale(.98);opacity:.75}100%{transform:none;opacity:1}}
+@keyframes rubedio-drop{0%{opacity:0;transform:translate(0) rotate(0)}18%{opacity:1}78%{opacity:1}100%{opacity:0;transform:translate(var(--drift),var(--drop)) rotate(var(--spin)) scale(.55)}}
+@media(max-width:680px),(max-height:600px){
+ .shop-stage{display:flex;flex-direction:column;gap:12px;height:auto;min-height:100dvh;padding:0 14px 12px;background-size:auto 100%}
+ .shop-top,.shop-packs,.shop-checkout,.shop-dialogue,.shop-status{position:relative;inset:auto;width:100%}
+ .shop-top{padding:12px 0;gap:5px}.shop-top h1{font-size:clamp(15px,4.4vw,25px)}#shopBack{padding:6px;font-size:10px}.shop-wallet{font-size:10px;padding:4px;gap:4px}.shop-wallet img{width:12px;height:17px}
+ .shop-packs{flex-shrink:0;width:min(100%,620px);margin:0 auto}
+ .shop-pack img{width:min(100%,115px)}.shop-pack span{font-size:12px}.shop-pack small{font-size:10px}
+ .shop-vendor{top:auto;bottom:114px;left:6%;height:235px;width:44%;opacity:.8}
+ .shop-dialogue{align-self:end;width:61%;min-height:76px}.shop-checkout{margin-top:auto}
+ .shop-register{left:78%;top:auto;bottom:31%;width:17%}
+}
+@media(prefers-reduced-motion:reduce){.shop-stage,.shop-vendor.sale{animation:none}.shop-pack img{transition:none}}
+.reduced-motion :is(.shop-stage,.shop-vendor.sale){animation:none}
+
+@media(max-width:470px){
+ .shop-packs{width:min(100%,380px);grid-template-columns:repeat(6,minmax(0,1fr));gap:14px 6px}
+ .shop-pack{grid-column:span 2}
+ .shop-pack:nth-child(4){grid-column:2 / span 2}
+ .shop-pack img{width:min(100%,85px)}
+}

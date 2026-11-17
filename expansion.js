@@ -23,15 +23,20 @@ P.resolveChoice=function(selection){
  if(c?.kind==='transfer'&&selection){
   const from=this.find(selection.from),to=this.find(selection.to),n=selection.amount;
   if(from?.zone!=='ser'||to?.zone!=='ser'||from.card===to.card||!c.ids.includes(selection.from)||!Number.isInteger(n)||n<1||n>2||this.fear(from.card)<n)this.fail('Transferência inválida.');
-  this.choices.shift();const rest=this.choices.splice(0);this.fearBatch([{card:to.card,amount:n}],c.card,()=>{this.changeFear(from.card,-n,from.card.name+' transferiu '+n+' Contador(es) de Medo.');this.refreshFearAuras();});this.choices.push(...rest);this.flushEffects();this.checkWin();return;
+  this.choices.shift();const rest=this.choices.splice(0);this.recordEffect?.(c.card,c.actor);this.fearBatch([{card:to.card,amount:n}],c.card,()=>{this.changeFear(from.card,-n,from.card.name+' transferiu '+n+' Contador(es) de Medo.');this.refreshFearAuras();});this.choices.push(...rest);this.flushEffects();this.checkWin();return;
  }
  if(c?.kind!=='pick'){const result=original.resolveChoice.call(this,selection);this.flushEffects();return result;}
  const values=selection?.values??(c.optional?[]:c.ids.slice(0,c.min));
  if(values.length<c.min||values.length>c.max||(!c.repeat&&new Set(values).size!==values.length)||!values.every(id=>c.ids.includes(id)))this.fail('Seleção inválida. Confira a quantidade e não repita cartas.');
  this.choices.shift();const rest=this.choices.splice(0);c.done(values);this.choices.push(...rest);this.flushEffects();this.checkWin();this.drainChoices();
 };
-P.flushEffects=function(){if(!this.choices.length){const jobs=this.afterChoices||[];this.afterChoices=[];for(const done of jobs)done();}};
-P.resolve=function({actor,cardUid,targetUid}){const found=this.find(cardUid);if(!found)return;const card=found.card;this.runEffects(card.effects,cardUid,targetUid,actor);const done=()=>{if(!this.over)this.triggerFields(actor,'onSupportActivation',card);if(card.subtype!=='field'&&card.subtype!=='reaction')this.destroy(cardUid,{bypassProtection:true,consumed:true});this.checkWin();};if(this.choices.length)(this.afterChoices??=[]).push(done);else done();};
+P.flushEffects=function(){
+ if(this.flushingEffects)return;
+ this.flushingEffects=true;
+ try{while(!this.over&&!this.pending&&!this.choices.length&&this.afterChoices?.length)this.afterChoices.shift()();}
+ finally{this.flushingEffects=false;}
+};
+P.resolve=function({actor,cardUid,targetUid}){const found=this.find(cardUid);if(!found)return;const card=found.card;this.recordSupport?.(card,actor);if(card.subtype==='continuous')card.continuousActive=true;this.runEffects(card.effects,cardUid,targetUid,actor);const done=()=>{if(!this.over){this.triggerFields(actor,'onSupportActivation',card);this.spellActivated?.(card);}if(!['field','reaction','continuous'].includes(card.subtype))this.destroy(cardUid,{bypassProtection:true,consumed:true});this.checkWin();};if(this.choices.length||this.pending)(this.afterChoices??=[]).push(done);else done();};
 P.discardCards=function(actor,ids){
  const p=this.p(actor);if(new Set(ids).size!==ids.length||!ids.every(id=>p.hand.some(c=>c.uid===id)))this.fail('Descarte inválido.');
  for(const id of ids){const i=p.hand.findIndex(c=>c.uid===id),c=p.hand.splice(i,1)[0];p.grave.push(c);this.info(c.name+' descartado(a) da mão.');}
@@ -62,21 +67,23 @@ P.activate=function(uid,target){const c=this.find(uid)?.card;if(c&&!this.effectA
 P.activateSer=function(uid,target,costs){const c=this.find(uid)?.card;if(c&&!this.effectAvailable(c,this.active))this.fail('Não há cartas ou alvos suficientes para essa habilidade.');return original.activateSer.call(this,uid,target,costs);};
 P.placeFromHand=function(uid,slot,opts={}){
  const c=this.find(uid)?.card,count=c?.summon?.discard||0;
- if(count){const ids=opts.discard||[];if(ids.length!==count||new Set(ids).size!==count||ids.includes(uid)||!ids.every(id=>this.p().hand.some(c=>c.uid===id)))this.fail('Escolha '+count+' outras cartas da mão para descartar.');}
+ if(count&&!this.paySummonExtras){const ids=opts.discard||[];if(ids.length!==count||new Set(ids).size!==count||ids.includes(uid)||!ids.every(id=>this.p().hand.some(c=>c.uid===id)))this.fail('Escolha '+count+' outras cartas da mão para descartar.');}
  // Base validates the entire summon first. Draw triggers are resolved after the discard payment.
  const queued=this.choices.length,previousDefer=this.cfg.deferChoices;this.cfg.deferChoices=true;
- try{original.placeFromHand.call(this,uid,slot,opts);if(count)this.discardCards(this.active,opts.discard);}finally{this.cfg.deferChoices=previousDefer;}
+ try{original.placeFromHand.call(this,uid,slot,opts);if(count&&!this.paySummonExtras)this.discardCards(this.active,opts.discard);}finally{this.cfg.deferChoices=previousDefer;}
  this.drainChoices();
 };
 P.trigger=function(card,when,actor,plan={},event={}){
  const expanded={...plan};
- for(const [i,e] of (card.effects||[]).entries())if(e.when===when&&this.needsTarget(e)&&!Object.hasOwn(plan,i)){
+ for(const [i,e] of (card.effects||[]).entries())if(e.when===when&&(!e.once||!this.used(card,i))&&this.needsTarget(e)&&!Object.hasOwn(plan,i)){
   const ids=this.targets(e,actor);if(ids.length)this.offerChoice({kind:'target',card,e,index:i,actor,ids,required:!e.optional});expanded[i]=[];
  }
  return original.trigger.call(this,card,when,actor,expanded,event);
 };
 P.runEffects=function(effects,sourceUid,targetUid,actor){
  for(const e of effects){
+  const source=this.find(sourceUid)?.card;
+  if(source&&(source.kind==='ser'||e.when))this.recordEffect?.(source,actor);
   if(e.op==='CUSTOM')this.customEffect(e,this.find(sourceUid)?.card||{uid:sourceUid,name:'Efeito'},targetUid,actor);
   else if(e.op==='COUNTER'&&e.target!=='enemyPlayer'){
    const cards=e.target==='allEnemySer'?this.allSer(1-actor):[this.find(e.target==='selfSer'?sourceUid:targetUid)?.card].filter(c=>c&&this.find(c.uid)?.zone==='ser');
@@ -85,16 +92,22 @@ P.runEffects=function(effects,sourceUid,targetUid,actor){
   this.checkWin();if(this.over)break;
  }
 };
-P.fearBatch=function(gains,source,beforeApply=()=>{}){
- const apply=()=>{beforeApply();for(const {card,amount} of gains)if(this.find(card.uid)?.zone==='ser')original.gainFear.call(this,card,amount);};
+P.fearBatch=function(gains,source,beforeApply=()=>{},afterApply=()=>{}){
+ const apply=()=>{beforeApply();try{for(const {card,amount} of gains)if(this.find(card.uid)?.zone==='ser')this.applyFear(card,amount,source);}finally{afterApply();}};
  const owners=[...new Set(gains.filter(x=>x.amount>0).map(x=>x.card.controller))];
  const respond=i=>{if(i>=owners.length)return apply();const actor=owners[i];const reactions=this.p(actor).field.support.filter(c=>c?.reactionEvent==='fear'&&!c.__activated);
   if(!reactions.length)return respond(i+1);
   this.pick(source||{name:'Contadores de Medo'},actor,'Negar a colocação de Medo com Véu da Lucidez?',reactions,0,1,ids=>{
-   if(ids.length){this.destroy(ids[0],{bypassProtection:true,consumed:true});this.info('Véu da Lucidez negou o efeito de colocação de Medo.');}
+   if(ids.length){this.recordReaction?.(reactions.find(c=>c.uid===ids[0]),actor,source?.controller);this.destroy(ids[0],{bypassProtection:true,consumed:true});this.info('Véu da Lucidez negou o efeito de colocação de Medo.');this.spellActivated?.(reactions.find(c=>c.uid===ids[0]));}
    else respond(i+1);
   },{optional:true,ai:()=>[reactions[0].uid],context:{gains:gains.map(x=>({uid:x.card.uid,amount:x.amount}))}});
  };respond(0);
+};
+P.applyFear=function(card,amount,source){
+ const natural=card===source&&this.active===card.controller&&this.phase==='automatic'&&this.gekGrowing===card.uid;
+ const previous=this.gekCounter;
+ if(natural&&card.gekTrack){card.gekTrack.own+=amount;this.gekCounter=card.uid;}
+ try{original.gainFear.call(this,card,amount);}finally{this.gekCounter=previous;}
 };
 P.gainFear=function(card,amount){this.fearBatch([{card,amount}]);};
 P.customEffect=function(e,source,target,actor){
@@ -111,7 +124,7 @@ P.customEffect=function(e,source,target,actor){
  case 'healTerror':{const c=this.find(target)?.card;if(c)c.terrorCurrent=Math.min(c.terror,c.terrorCurrent+1);break;}
  case 'resetStats':{const c=this.find(target)?.card;if(c){c.mods=c.mods.filter(m=>!['atk','def'].includes(m.stat));c.zeroDefTurn=0;this.info('Alterações aplicadas de ATK/DEF removidas de '+c.name+'. Bônus contínuos de Campo permanecem ativos.');}break;}
  case 'roundShield':for(const c of this.fieldSer()){c.shields++;(c.roundShields??=[]).push(Math.ceil(this.turn/2));}break;
- case 'fearDamage':case 'fearHeal':{const amount=Math.floor(this.fearTotal()/2);for(const c of this.fieldSer())c.counters.medo=0;this.refreshFearAuras();this.changeSanity(action==='fearHeal'?actor:1-actor,action==='fearHeal'?amount:-amount);break;}
+ case 'fearDamage':case 'fearHeal':{const amount=Math.floor(this.fearTotal()/2);for(const c of [...this.fieldSer(),...(this.continuous?.('queda_continua_desesperada')||[])]){if(c.gekTrack&&this.fear(c))c.gekTrack.clean=false;c.counters.medo=0;}this.refreshFearAuras();if(this.effectSanity)this.effectSanity(action==='fearHeal'?actor:1-actor,action==='fearHeal'?amount:-amount,actor,source);else this.changeSanity(action==='fearHeal'?actor:1-actor,action==='fearHeal'?amount:-amount);break;}
  case 'mutual':this.pick(source,actor,'Escolha seu Ser para enviar ao descarte',this.allSer(actor),1,1,allies=>{
   this.pick(source,actor,'Escolha o Ser inimigo para enviar ao descarte',this.allSer(1-actor),1,1,enemies=>{for(const id of [...allies,...enemies])this.destroy(id,{bypassProtection:true,consumed:true,check:false});this.checkWin();});
  });break;
@@ -129,7 +142,7 @@ P.customEffect=function(e,source,target,actor){
   this.discardCards(actor,ids);const humans=this.allSer(actor).filter(c=>c.affinity==='Humano');if(ids.length&&humans.length)this.pick(source,actor,'Um Humano por carta descartada (pode repetir)',humans,ids.length,ids.length,targets=>{for(const id of targets)original.runEffects.call(this,[{op:'BUFF',stat:'atk',amount:1},{op:'BUFF',stat:'def',amount:1}],source.uid,id,actor);},{repeat:true});
  },{optional:true});break;
  case 'balance':{const cards=this.fieldSer(),total=this.fearTotal();if(!cards.length)break;const each=Math.floor(total/cards.length),extra=total%cards.length;
-  const apply=ids=>{const gains=[],reductions=[];for(const c of cards){const amount=each+(ids.includes(c.uid)?1:0),old=this.fear(c);if(amount>old)gains.push({card:c,amount:amount-old});else reductions.push({card:c,amount});}this.fearBatch(gains,source,()=>{for(const {card,amount} of reductions)card.counters.medo=amount;this.refreshFearAuras();});};
+  const apply=ids=>{const gains=[],reductions=[];for(const c of cards){const amount=each+(ids.includes(c.uid)?1:0),old=this.fear(c);if(amount>old)gains.push({card:c,amount:amount-old});else reductions.push({card:c,amount});}this.fearBatch(gains,source,()=>{for(const {card,amount} of reductions){if(card.gekTrack&&this.fear(card)!==amount)card.gekTrack.clean=false;card.counters.medo=amount;}this.refreshFearAuras();});};
   if(extra)this.pick(source,actor,'Escolha os Seres que recebem 1 contador excedente',cards,extra,extra,apply);else apply([]);break;}
  case 'drainFear':case 'refugeFear':{const fromOwner=action==='drainFear'?actor:1-actor,cards=this.allSer(fromOwner).filter(c=>this.fear(c)>0),dest=this.allSer(1-fromOwner);if(!cards.length||!dest.length)break;
   this.pick(source,actor,'Escolha de qual Ser remover Medo',cards,1,1,ids=>{const from=this.find(ids[0]).card,max=this.fear(from);
@@ -146,9 +159,10 @@ P.customEffect=function(e,source,target,actor){
  const cost=e.discardCost||source.discardCost||0;
  if(cost)this.discardChoice(source,actor,cost,execute);else execute();
 };
-P.stat=function(card,key){let v=original.stat.call(this,card,key);if(key==='atk'&&this.fieldSer().includes(card)){const fields=this.players.flatMap(p=>p.field.support).filter(c=>c?.id==='circulo_colapso');v+=fields.length*Math.floor(this.fearTotal()/2);}return v;};
+P.stat=function(card,key){let v=original.stat.call(this,card,key);if(key==='atk'&&this.fieldSer().includes(card)){const fields=this.players.flatMap(p=>p.field.support).filter(c=>c?.id==='circulo_colapso'&&!c.fieldPending);v+=fields.length*Math.floor(this.fearTotal()/2);}return v;};
 P.attack=function(attacker,target,skipReaction=false){
  const a=this.find(attacker),t=this.find(target);
+ this.requirePhase?.('combat');
  if(!skipReaction&&!this.over&&!this.pending&&a?.zone==='ser'&&a.owner===this.active&&!a.card.hasAttacked&&a.card.sealedUntil<this.turn&&t?.zone==='ser'&&t.owner!==this.active){
   const reactions=this.p(t.owner).field.support.filter(c=>c?.reactionEvent==='attack'&&!c.__activated&&(c.id!=='desvio_alvo'||this.allSer(t.owner).length>1));
   if(reactions.length){this.pending={kind:'attack',actor:this.active,cardUid:attacker,targetUid:target,responder:t.owner,reactions:reactions.map(c=>c.uid)};return {pending:true};}
@@ -162,13 +176,21 @@ P.respond=function(uid=null,redirect=null){
  const r=uid?this.find(uid)?.card:null;
  if(r?.id==='desvio_alvo'&&(!this.allSer(pending.responder).some(c=>c.uid===redirect)||redirect===pending.targetUid))this.fail('Escolha outro Ser aliado para receber o ataque.');
  this.pending=null;
- if(r){r.__activated=true;this.destroy(uid,{bypassProtection:true,consumed:true});this.triggerFields(pending.responder,'onSupportActivation',r);
+ if(r){this.recordReaction?.(r,pending.responder,pending.actor);r.__activated=true;this.destroy(uid,{bypassProtection:true,consumed:true});this.triggerFields(pending.responder,'onSupportActivation',r);
   if(r.id==='cobertura_defensiva'){const a=this.find(pending.cardUid)?.card;if(a)a.hasAttacked=true;this.info('Cobertura Defensiva negou o ataque.');return {negated:true};}
  }
  return this.attack(pending.cardUid,redirect||pending.targetUid,true);
 };
 P.endTurn=function(){
  if(this.over||this.pending||this.choices.length)this.fail('Resolva as escolhas antes de encerrar o turno.');
+ if(this.cfg.turnPhases&&this.endPhase){
+  return this.endPhase(()=>{
+   if(this.over)return;
+   this.active=1-this.active;this.turn++;const p=this.p();p.commonUsed=0;p.specialUsed=0;
+   for(const c of this.fieldSer()){c.mods=c.mods.filter(m=>m.expires>=this.turn);if(c.sealedUntil<this.turn)c.sealedUntil=0;if(c.controller===this.active)c.hasAttacked=false;}
+   this.info('Turno de Jogador '+(this.active+1)+'.');this.startTurn();
+  });
+ }
  const round=Math.ceil(this.turn/2);
  for(const c of this.allSer(this.active))this.trigger(c,'onTurnEnd',this.active);
  const finish=()=>{
@@ -188,8 +210,8 @@ P.endTurn=function(){
  if(this.choices.length)(this.afterChoices??=[]).push(finish);else finish();
 };
 root.HV_RIVALS=[
- {id:'carrasco',name:'O Carrasco',level:'Iniciante',description:'Um executor que prefere resolver tudo no combate. Cartas simples e jogadas diretas para aprender o duelo.',style:'Combate básico',ids:['ghostface','cultista','vigia','sobrevivente','espectro','michael','esqueleto','morcego','lamina','amuleto','velas','manuscrito','corte','exorcismo','frenesi']},
- {id:'guardia',name:'A Guardiã',level:'Intermediária',description:'Protege os sobreviventes do refúgio. Usa Humanos, escudos, descarte e recuperação para manter sua equipe em campo.',style:'Humanos e recuperação',ids:['reporter_inexplicavel','arquivista_proibido','medica_vigilia','cacador_anomalias','engenheira_refugio','investigadora_nevoa','sobrevivente_desesperado','veterano_noite','professor_oculto','lider_remanescentes','refugio','bandagens_campanha','distintivo_sobrevivente','cobertura_defensiva','cofre_reconstituicao']},
+ {id:'carrasco',name:'O Carrasco',level:'Iniciante',description:'Um executor que prefere resolver tudo no combate. Cartas simples e jogadas diretas para aprender o duelo.',style:'Combate básico',ids:['ghostface','cultista','vigia','sobrevivente','espectro','corredor_carmesin','papa_sonhos','morcego','lamina','amuleto','velas','manuscrito','corte','exorcismo','frenesi']},
+ {id:'guardia',name:'A Guardiã',level:'Intermediária',description:'Protege os sobreviventes do refúgio. Usa Humanos, escudos, descarte e recuperação para manter sua equipe em campo.',style:'Humanos e recuperação',ids:['reporter_inexplicavel','arquivista_proibido','medica_vigilia','testemunha','engenheira_refugio','investigadora_nevoa','sobrevivente_desesperado','veterano_noite','ultimo_comandante','lider_remanescentes','refugio','bandagens_campanha','distintivo_sobrevivente','cobertura_defensiva','cofre_reconstituicao']},
  {id:'oraculo',name:'A Oráculo',level:'Avançada',description:'Espalha Medo e explora cada contador. Combina maldições, transferências e execução de Seres marcados.',style:'Contadores e controle',ids:['boneca','portador','testemunha','zumbi','oraculo','executor','carcaca','eco','noiva','cobrador','vigario','correntes_condenacao','ampulheta_colapso','drenagem_pavor','veu_lucidez']}
 ];
 for(const rival of root.HV_RIVALS){rival.deck=rival.ids.flatMap(id=>[id,id]);if(!D.validDeck(rival.deck))throw Error('Baralho inválido: '+rival.name);}

@@ -16,8 +16,8 @@ const play=(g,id,lane='ser',opts={})=>{
  return card;
 };
 const fear=(g,card,amount)=>g.gainFear(card,amount);
-assert.equal(CARD_LIBRARY.length,91);
-assert.equal(DEFAULT_DECK.length,30);
+assert.equal(CARD_LIBRARY.length,129);
+assert.equal(DEFAULT_DECK.length,24);
 assert(validDeck(DEFAULT_DECK));
 assert(!validDeck(DEFAULT_DECK.slice(0,19)));
 assert(validDeck(DEFAULT_DECK.slice(0,20)));

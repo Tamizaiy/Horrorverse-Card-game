@@ -1534,7 +1534,7 @@ root.HV_DATA={
       "name": "Círculo do Colapso",
       "kind": "magia",
       "subtype": "field",
-      "text": "Enquanto este Campo permanecer em jogo, todos os Seres ganham +1 ATK para cada 2 Contadores de Medo no campo (arredondando para baixo). Ao final de cada rodada, destrua todos os Seres no campo.",
+      "text": "Enquanto este Campo permanecer em jogo, todos os Seres ganham +1 ATK para cada 2 Contadores de Medo no campo (arredondado para baixo). Ao final de cada rodada, destrua todos os Seres no campo.",
       "art": "assets/circulo_colapso.png",
       "effects": [
         {
@@ -1767,6 +1767,806 @@ root.HV_DATA={
       "rarity": "comum",
       "def": 5,
       "periculosidade": 3
+    },
+    {
+      "id": "sistema_cambio_oculto",
+      "name": "Sistema de Câmbio Oculto",
+      "kind": "magia",
+      "periculosidade": 3,
+      "text": "Enquanto este Feitiço permanecer em campo, sempre que você comprar um Feitiço, você pode devolvê-lo ao baralho, embaralhar e comprar outra carta. Até duas vezes por turno.",
+      "art": "assets/sistema_cambio_oculto.webp",
+      "subtype": "continuous",
+      "cardSubtype": "Contínuo",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "exchangeSpell"
+        }
+      ]
+    },
+    {
+      "id": "queda_continua_desesperada",
+      "name": "Queda Contínua Desesperada",
+      "kind": "magia",
+      "periculosidade": 4,
+      "text": "Enquanto este Feitiço permanecer em campo, redirecione para esta carta os Contadores de Medo que um efeito colocaria. Para cada 2 Contadores de Medo nesta carta, todos os Seres inimigos recebem −1 DEF.",
+      "art": "assets/queda_continua_desesperada.webp",
+      "subtype": "continuous",
+      "cardSubtype": "Contínuo",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "redirectFear"
+        }
+      ]
+    },
+    {
+      "id": "campo_drenagem",
+      "name": "Campo de Drenagem",
+      "kind": "magia",
+      "periculosidade": 5,
+      "text": "No início de cada rodada, todos os Seres perdem 1 TERROR. Seres que chegarem a 0 TERROR são enviados para a pilha de descarte.",
+      "art": "assets/campo_drenagem.webp",
+      "subtype": "continuous",
+      "cardSubtype": "Contínuo",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "roundDrain"
+        }
+      ]
+    },
+    {
+      "id": "fila_espera_submundo",
+      "name": "Fila de Espera do Submundo",
+      "kind": "magia",
+      "periculosidade": 4,
+      "text": "Enquanto este Feitiço permanecer em campo, sempre que um Ser for removido do campo por combate, devolva-o para a mão de seu dono.",
+      "art": "assets/fila_espera_submundo.webp",
+      "subtype": "continuous",
+      "cardSubtype": "Contínuo",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "combatReturn"
+        }
+      ]
+    },
+    {
+      "id": "parasita_vertiginoso",
+      "name": "Parasita Vertiginoso",
+      "kind": "magia",
+      "periculosidade": 3,
+      "text": "Vincule este Feitiço a 1 Ser inimigo. A cada um dos seus turnos, esse Ser recebe −1 ATK e −1 DEF cumulativos enquanto esta carta permanecer em campo. Ao sair, as reduções deste Feitiço são removidas.",
+      "art": "assets/parasita_vertiginoso.webp",
+      "subtype": "continuous",
+      "cardSubtype": "Contínuo",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "bindParasite",
+          "target": "enemySer"
+        }
+      ]
+    },
+    {
+      "id": "forca_resistencia",
+      "name": "Força da Resistência",
+      "kind": "magia",
+      "periculosidade": 4,
+      "text": "Enquanto esta carta estiver em campo, seus Seres Humanos recebem +1 ATK por Ser Humano em campo, até +5 ATK.",
+      "art": "assets/forca_resistencia.webp",
+      "subtype": "continuous",
+      "cardSubtype": "Contínuo",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "humanAura"
+        }
+      ]
+    },
+    {
+      "id": "grande_impacto",
+      "name": "Grande Impacto",
+      "kind": "magia",
+      "periculosidade": 2,
+      "text": "Cause 2 de dano ao TERROR de 1 Ser em campo.",
+      "art": "assets/grande_impacto.webp",
+      "subtype": "normal",
+      "cardSubtype": "Normal",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "damageTerror",
+          "target": "anySer",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "id": "ultimo_rosto",
+      "name": "O Último Rosto",
+      "kind": "ser",
+      "periculosidade": 5,
+      "text": "Invocação especial com 2 Assassinos aliados e descarte de 1 carta. Uma vez por turno, destrua 1 Ser inimigo com TERROR 3 ou menos. Se ele tinha Medo, o oponente perde 1 Sanidade.",
+      "art": "assets/ultimo_rosto.webp",
+      "affinity": "Assassino",
+      "atk": 8,
+      "terror": 7,
+      "rarity": "especial",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "fearExecution",
+          "target": "enemySer",
+          "maxTerror": 3,
+          "when": "manual"
+        }
+      ],
+      "summon": {
+        "sacrifices": 2,
+        "sacrificeAffinity": "Assassino",
+        "sacrificeMinimum": 2,
+        "discard": 1
+      },
+      "def": 6
+    },
+    {
+      "id": "imperador_cinzas_eternas",
+      "name": "Imperador das Cinzas Eternas",
+      "kind": "ser",
+      "periculosidade": 6,
+      "text": "Invocação especial com 2 Infernais aliados, 1 Item aliado destruído e perda de 2 Sanidade. Ao ser invocado, cause 2 de dano ao TERROR de todos os Seres inimigos. Uma vez por turno, perca 1 Sanidade para ganhar +2 ATK até o fim do turno.",
+      "art": "assets/imperador_cinzas_eternas.webp",
+      "affinity": "Infernal",
+      "atk": 9,
+      "terror": 8,
+      "rarity": "especial",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "enemyTerrorDamage",
+          "when": "onSummon",
+          "amount": 2
+        },
+        {
+          "op": "CUSTOM",
+          "action": "sanityBuff",
+          "when": "manual"
+        }
+      ],
+      "summon": {
+        "sacrifices": 2,
+        "sacrificeAffinity": "Infernal",
+        "sacrificeMinimum": 2,
+        "items": 1,
+        "sanity": 2
+      },
+      "def": 7
+    },
+    {
+      "id": "soberana_esquecidos",
+      "name": "A Soberana dos Esquecidos",
+      "kind": "ser",
+      "periculosidade": 6,
+      "text": "Invocação especial com 2 Espectrais aliados e banimento de 2 Seres do seu descarte. Uma vez por turno, impeça a destruição por combate de outro aliado e coloque 1 Medo nesta carta. Remova 3 Medos desta carta para recuperar 1 Espectral do descarte para a mão.",
+      "art": "assets/soberana_esquecidos.webp",
+      "affinity": "Espectral",
+      "atk": 6,
+      "terror": 8,
+      "rarity": "especial",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "recoverSpectral",
+          "when": "manual",
+          "repeatable": true,
+          "fearSelf": 3
+        }
+      ],
+      "summon": {
+        "sacrifices": 2,
+        "sacrificeAffinity": "Espectral",
+        "sacrificeMinimum": 2,
+        "banish": 2
+      },
+      "def": 9
+    },
+    {
+      "id": "arquimago_veu_partido",
+      "name": "Arquimago do Véu Partido",
+      "kind": "ser",
+      "periculosidade": 5,
+      "text": "Invocação especial com 1 Ocultista aliado e 2 Feitiços aliados enviados ao descarte. Ao ser invocado, recupere 1 Feitiço do descarte para a mão. Uma vez por turno, descarte 1 carta para negar a ativação de 1 Feitiço inimigo.",
+      "art": "assets/arquimago_veu_partido.webp",
+      "affinity": "Ocultista",
+      "atk": 6,
+      "terror": 8,
+      "rarity": "especial",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "recoverSpell",
+          "when": "onSummon"
+        }
+      ],
+      "summon": {
+        "sacrifices": 1,
+        "sacrificeAffinity": "Ocultista",
+        "sacrificeMinimum": 1,
+        "spells": 2
+      },
+      "def": 7
+    },
+    {
+      "id": "tita_massacre",
+      "name": "O Titã do Massacre",
+      "kind": "ser",
+      "periculosidade": 6,
+      "text": "Invocação especial com 3 Seres aliados, sendo pelo menos 2 Carnificina. Se destruir um Ser por combate, pode atacar mais uma vez neste turno. O ataque adicional é direto à Sanidade e, depois dele, este Ser perde 2 TERROR.",
+      "art": "assets/tita_massacre.webp",
+      "affinity": "Carnificina",
+      "atk": 10,
+      "terror": 8,
+      "rarity": "especial",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "extraDirect",
+          "when": "onCombatDestroy"
+        }
+      ],
+      "summon": {
+        "sacrifices": 3,
+        "sacrificeAffinity": "Carnificina",
+        "sacrificeMinimum": 2
+      },
+      "def": 5
+    },
+    {
+      "id": "organismo_primordial",
+      "name": "O Organismo Primordial",
+      "kind": "ser",
+      "periculosidade": 7,
+      "text": "Invocação especial com 2 Aberrações aliadas e descarte de 2 cartas. Enquanto tiver TERROR 5 ou mais, efeitos não podem destruí-lo. Uma vez por turno, remova 2 Medos de Seres no campo para recuperar 1 TERROR.",
+      "art": "assets/organismo_primordial.webp",
+      "affinity": "Aberração",
+      "atk": 7,
+      "terror": 9,
+      "rarity": "especial",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "restoreTerror",
+          "when": "manual",
+          "target": "selfSer",
+          "fearSpend": 2,
+          "amount": 1
+        }
+      ],
+      "summon": {
+        "sacrifices": 2,
+        "sacrificeAffinity": "Aberração",
+        "sacrificeMinimum": 2,
+        "discard": 2
+      },
+      "def": 10
+    },
+    {
+      "id": "monarca_pavor_absoluto",
+      "name": "O Monarca do Pavor Absoluto",
+      "kind": "ser",
+      "periculosidade": 6,
+      "text": "Invocação especial com 2 Entidades aliadas e remoção de 5 Medos de Seres no campo. Ao ser invocado, coloque 1 Medo em cada inimigo. Uma vez por turno, remova 3 Medos de Seres inimigos para destruir 1 Ser inimigo que tenha Medo.",
+      "art": "assets/monarca_pavor_absoluto.webp",
+      "affinity": "Entidade",
+      "atk": 8,
+      "terror": 8,
+      "rarity": "especial",
+      "effects": [
+        {
+          "op": "COUNTER",
+          "target": "allEnemySer",
+          "amount": 1,
+          "when": "onSummon"
+        },
+        {
+          "op": "CUSTOM",
+          "action": "markedExecution",
+          "target": "enemySer",
+          "minFear": 1,
+          "fearSpend": 3,
+          "enemyFearCost": true,
+          "when": "manual"
+        }
+      ],
+      "summon": {
+        "sacrifices": 2,
+        "sacrificeAffinity": "Entidade",
+        "sacrificeMinimum": 2,
+        "fearSpend": 5,
+        "serFearOnly": true
+      },
+      "def": 8
+    },
+    {
+      "id": "ultimo_comandante",
+      "name": "O Último Comandante",
+      "kind": "ser",
+      "periculosidade": 5,
+      "text": "Invocação especial com 2 Humanos aliados e descarte de 2 cartas. Ao ser invocado, compre 2 cartas. Uma vez por turno, descarte 1 carta para colocar 1 Feitiço do descarte na mão ou dar +2 DEF aos seus Humanos até o fim do turno.",
+      "art": "assets/ultimo_comandante.webp",
+      "affinity": "Humano",
+      "atk": 5,
+      "terror": 7,
+      "rarity": "especial",
+      "effects": [
+        {
+          "op": "DRAW",
+          "when": "onSummon",
+          "amount": 2
+        },
+        {
+          "op": "CUSTOM",
+          "action": "commanderChoice",
+          "when": "manual",
+          "discardCost": 1
+        }
+      ],
+      "summon": {
+        "sacrifices": 2,
+        "sacrificeAffinity": "Humano",
+        "sacrificeMinimum": 2,
+        "discard": 2
+      },
+      "def": 8
+    },
+    {
+      "id": "guardia_ultimo_limiar",
+      "name": "A Guardiã do Último Limiar",
+      "kind": "ser",
+      "periculosidade": 6,
+      "text": "Invocação especial com 2 Espirituais aliados e 1 Feitiço aliado consumido. Ao ser invocada, recupere 2 Sanidade. Uma vez por turno, quando um efeito inimigo reduzir sua Sanidade, você pode descartar 1 carta para negar essa redução.",
+      "art": "assets/guardia_ultimo_limiar.webp",
+      "affinity": "Espiritual",
+      "atk": 5,
+      "terror": 9,
+      "rarity": "especial",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "healSanity",
+          "when": "onSummon"
+        }
+      ],
+      "summon": {
+        "sacrifices": 2,
+        "sacrificeAffinity": "Espiritual",
+        "sacrificeMinimum": 2,
+        "spells": 1
+      },
+      "def": 9
+    },
+    {
+      "id": "drenagem_almas",
+      "name": "Drenagem de Almas",
+      "kind": "magia",
+      "periculosidade": 4,
+      "text": "Cause 2 de dano a todos os Seres em campo. Em seguida, cada jogador perde 1 ponto de Sanidade.",
+      "art": "assets/drenagem_almas.webp",
+      "subtype": "normal",
+      "cardSubtype": "Normal",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "soulDrain"
+        }
+      ]
+    },
+    {
+      "id": "equipamentos_basicos",
+      "name": "Equipamentos Básicos",
+      "kind": "magia",
+      "periculosidade": 3,
+      "text": "Seres Humanos que você controla recebem +2 ATK até que cada um deixe o campo.",
+      "art": "assets/equipamentos_basicos.webp",
+      "subtype": "normal",
+      "cardSubtype": "Suporte",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "equipHumans"
+        }
+      ]
+    },
+    {
+      "id": "selo_enfraquecimento",
+      "name": "Selo de Enfraquecimento",
+      "kind": "magia",
+      "periculosidade": 2,
+      "text": "Reduza a DEF de 1 Ser pela metade, arredondando para cima, até que esse Ser deixe o campo.",
+      "art": "assets/selo_enfraquecimento.webp",
+      "subtype": "normal",
+      "cardSubtype": "Maldição",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "halveDefense",
+          "target": "anySer"
+        }
+      ]
+    },
+    {
+      "id": "escorregao",
+      "name": "Escorregão",
+      "kind": "magia",
+      "periculosidade": 2,
+      "text": "Negue o ataque de 1 Ser inimigo. Depois, esse Ser perde 1 DEF até o próximo turno.",
+      "art": "assets/escorregao.webp",
+      "subtype": "reaction",
+      "cardSubtype": "Reação",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "slipAttack"
+        }
+      ],
+      "reactionEvent": "attack"
+    },
+    {
+      "id": "afiar_garras",
+      "name": "Afiar Garras",
+      "kind": "magia",
+      "periculosidade": 1,
+      "text": "1 Ser Aberração recebe +2 ATK até o fim do turno.",
+      "art": "assets/afiar_garras.webp",
+      "subtype": "normal",
+      "cardSubtype": "Normal",
+      "effects": [
+        {
+          "op": "BUFF",
+          "target": "anySer",
+          "stat": "atk",
+          "amount": 2,
+          "targetAffinity": "Aberração"
+        }
+      ]
+    },
+    {
+      "id": "metamorfose_corrupta",
+      "name": "Metamorfose Corrupta",
+      "kind": "magia",
+      "periculosidade": 5,
+      "text": "Destrua 1 Ser que você controla. Em seguida, invoque 2 Seres do seu descarte até o fim da rodada. Depois, envie-os de volta ao descarte.",
+      "art": "assets/metamorfose_corrupta.webp",
+      "subtype": "normal",
+      "cardSubtype": "Ritual",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "corruptRevive",
+          "target": "allySer"
+        }
+      ]
+    },
+    {
+      "id": "impeto_besta",
+      "name": "Ímpeto da Besta",
+      "kind": "item",
+      "periculosidade": 2,
+      "text": "1 Ser Aberração em campo recebe +2 ATK enquanto permanecer em campo.",
+      "art": "assets/impeto_besta.webp",
+      "subtype": "normal",
+      "cardSubtype": "Equipamento",
+      "effects": [
+        {
+          "op": "BUFF",
+          "target": "anySer",
+          "stat": "atk",
+          "amount": 2,
+          "targetAffinity": "Aberração",
+          "permanent": true
+        }
+      ]
+    },
+    {
+      "id": "prisma_possuido",
+      "name": "Prisma do Possuído",
+      "kind": "item",
+      "periculosidade": 2,
+      "text": "1 Ser Espectral em campo recebe +2 ATK enquanto permanecer em campo.",
+      "art": "assets/prisma_possuido.webp",
+      "subtype": "normal",
+      "cardSubtype": "Relíquia",
+      "effects": [
+        {
+          "op": "BUFF",
+          "target": "anySer",
+          "stat": "atk",
+          "amount": 2,
+          "targetAffinity": "Espectral",
+          "permanent": true
+        }
+      ]
+    },
+    {
+      "id": "dardos_quebra_dedos",
+      "name": "Dardos Quebra-Dedos",
+      "kind": "item",
+      "periculosidade": 2,
+      "text": "1 Ser em campo recebe −1 ATK até ser enviado para a pilha de descarte.",
+      "art": "assets/dardos_quebra_dedos.webp",
+      "subtype": "normal",
+      "cardSubtype": "Armadilha",
+      "effects": [
+        {
+          "op": "BUFF",
+          "target": "anySer",
+          "stat": "atk",
+          "amount": -1,
+          "permanent": true,
+          "untilGrave": true
+        }
+      ]
+    },
+    {
+      "id": "cutelo_enferrujado",
+      "name": "Cutelo Enferrujado",
+      "kind": "item",
+      "periculosidade": 2,
+      "text": "1 Ser Carnificina em campo recebe +2 ATK enquanto permanecer em campo.",
+      "art": "assets/cutelo_enferrujado.webp",
+      "subtype": "normal",
+      "cardSubtype": "Arma",
+      "effects": [
+        {
+          "op": "BUFF",
+          "target": "anySer",
+          "stat": "atk",
+          "amount": 2,
+          "targetAffinity": "Carnificina",
+          "permanent": true
+        }
+      ]
+    },
+    {
+      "id": "amuleto_praga",
+      "name": "Amuleto da Praga",
+      "kind": "item",
+      "periculosidade": 3,
+      "text": "Descarte 1 carta da sua mão. Escolha 2 Seres em campo. Ambos recebem −2 ATK enquanto permanecerem em campo.",
+      "art": "assets/amuleto_praga.webp",
+      "subtype": "normal",
+      "cardSubtype": "Amuleto",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "plagueAmulet",
+          "discardCost": 1
+        }
+      ]
+    },
+    {
+      "id": "rastejante",
+      "name": "Rastejante",
+      "kind": "ser",
+      "periculosidade": 1,
+      "text": "Quando este Ser for destruído, invoque 1 Rastejante da mão ou do baralho.",
+      "art": "assets/rastejante.webp",
+      "affinity": "Aberração",
+      "atk": 3,
+      "terror": 2,
+      "rarity": "comum",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "summonRastejante",
+          "when": "onDestroyed"
+        }
+      ],
+      "def": 2
+    },
+    {
+      "id": "papa_sonhos",
+      "name": "Papa Sonhos",
+      "kind": "ser",
+      "periculosidade": 2,
+      "text": "",
+      "art": "assets/papa_sonhos.webp",
+      "affinity": "Aberração",
+      "atk": 4,
+      "terror": 3,
+      "rarity": "comum",
+      "effects": [],
+      "def": 1
+    },
+    {
+      "id": "gek_felliax",
+      "name": "Gek Felliax",
+      "kind": "ser",
+      "periculosidade": 1,
+      "text": "No início de cada um dos seus turnos, coloque 1 Medo nesta carta. Se ela tiver 3 ou mais Medos, envie-a ao descarte e invoque 1 Gek Pulliax da mão ou do baralho.",
+      "art": "assets/gek_felliax.webp",
+      "affinity": "Aberração",
+      "atk": 0,
+      "terror": 1,
+      "rarity": "comum",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "gekEvolve",
+          "when": "onTurnStart",
+          "threshold": 3,
+          "next": "gek_pulliax"
+        }
+      ],
+      "def": 5
+    },
+    {
+      "id": "gek_pulliax",
+      "name": "Gek Pulliax",
+      "kind": "ser",
+      "periculosidade": 1,
+      "text": "Só pode ser invocado pelo efeito de Gek Felliax. No início de cada um dos seus turnos, coloque 1 Medo nesta carta. Com 2 ou mais Medos, envie-a ao descarte e invoque 1 Gek Omelliax da mão ou do baralho.",
+      "art": "assets/gek_pulliax.webp",
+      "affinity": "Aberração",
+      "atk": 0,
+      "terror": 2,
+      "rarity": "especial",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "gekEvolve",
+          "when": "onTurnStart",
+          "threshold": 2,
+          "next": "gek_omelliax"
+        }
+      ],
+      "summon": {
+        "onlyBy": "gek_felliax"
+      },
+      "def": 4
+    },
+    {
+      "id": "gek_omelliax",
+      "name": "Gek Omelliax",
+      "kind": "ser",
+      "periculosidade": 5,
+      "text": "Só pode ser invocado pelo efeito de Gek Pulliax. Ao ser invocado, envie todos os outros Seres ao descarte. Depois, cada jogador compra 1 carta para cada Ser enviado por este efeito.",
+      "art": "assets/gek_omelliax.webp",
+      "affinity": "Aberração",
+      "atk": 8,
+      "terror": 6,
+      "rarity": "especial",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "gekClear",
+          "when": "onSummon"
+        }
+      ],
+      "summon": {
+        "onlyBy": "gek_pulliax"
+      },
+      "def": 6
+    },
+    {
+      "id": "lobisomem_adulto",
+      "name": "Lobisomem Adulto",
+      "kind": "ser",
+      "periculosidade": 3,
+      "text": "Invocação especial com 1 Aberração aliada. Sempre que causar dano de combate a um Ser, recupere 1 TERROR.",
+      "art": "assets/lobisomem_adulto.webp",
+      "affinity": "Aberração",
+      "atk": 6,
+      "terror": 5,
+      "rarity": "especial",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "restoreTerror",
+          "target": "combatTarget",
+          "when": "onCombatDamage",
+          "amount": 1
+        }
+      ],
+      "summon": {
+        "sacrifices": 1,
+        "sacrificeAffinity": "Aberração",
+        "sacrificeMinimum": 1
+      },
+      "def": 4
+    },
+    {
+      "id": "corredor_carmesin",
+      "name": "Corredor Carmesin",
+      "kind": "ser",
+      "periculosidade": 1,
+      "text": "",
+      "art": "assets/corredor_carmesin.webp",
+      "affinity": "Assassino",
+      "atk": 3,
+      "terror": 3,
+      "rarity": "comum",
+      "effects": [],
+      "def": 1
+    },
+    {
+      "id": "retaliante",
+      "name": "Retaliante",
+      "kind": "ser",
+      "periculosidade": 2,
+      "text": "Sempre que um jogador perder Sanidade, este Ser recebe +1 ATK permanente.",
+      "art": "assets/retaliante.webp",
+      "affinity": "Assassino",
+      "atk": 2,
+      "terror": 4,
+      "rarity": "comum",
+      "effects": [
+        {
+          "op": "CUSTOM",
+          "action": "retaliate",
+          "when": "onSanityLoss"
+        }
+      ],
+      "def": 3
+    },
+    {
+      "id": "fios_prata",
+      "name": "Fios de Prata",
+      "kind": "ser",
+      "periculosidade": 2,
+      "text": "Sempre que um Feitiço for ativado, escolha 1 Ser em campo. Ele recebe −1 DEF até o fim do turno.",
+      "art": "assets/fios_prata.webp",
+      "affinity": "Assassino",
+      "atk": 5,
+      "terror": 5,
+      "rarity": "comum",
+      "effects": [
+        {
+          "op": "BUFF",
+          "target": "anySer",
+          "stat": "def",
+          "amount": -1,
+          "when": "onSpellActivation"
+        }
+      ],
+      "def": 1
+    },
+    {
+      "id": "intangivel",
+      "name": "O Intangível",
+      "kind": "ser",
+      "periculosidade": 2,
+      "text": "Este Ser também é considerado Espectral. Se for removido do campo por um Feitiço, devolva-o para a sua mão.",
+      "art": "assets/intangivel.webp",
+      "affinity": "Assassino",
+      "atk": 6,
+      "terror": 1,
+      "rarity": "comum",
+      "effects": [],
+      "extraAffinities": [
+        "Espectral"
+      ],
+      "def": 1
+    },
+    {
+      "id": "sussurrante",
+      "name": "A Sussurrante",
+      "kind": "ser",
+      "periculosidade": 4,
+      "text": "Invocação especial com descarte de 2 Itens da mão. Este Ser recebe +1 ATK para cada 2 Itens nas pilhas de descarte dos dois jogadores.",
+      "art": "assets/sussurrante.webp",
+      "affinity": "Assassino",
+      "atk": 6,
+      "terror": 6,
+      "rarity": "especial",
+      "effects": [],
+      "summon": {
+        "discard": 2,
+        "discardKind": "item"
+      },
+      "def": 4
     }
   ],
   "DEFAULT_CONFIG": {
@@ -1791,15 +2591,18 @@ root.HV_DATA={
   }
 };
 const {CARD_LIBRARY,DEFAULT_CONFIG}=root.HV_DATA;
-root.HV_DATA.randomDeck=function(){
- const pool=CARD_LIBRARY.flatMap(card=>Array(DEFAULT_CONFIG.maxCopies).fill(card.id));
+root.HV_DATA.randomDeck=function(collection){
+ const pool=CARD_LIBRARY.flatMap(card=>Array(collection?Math.min(DEFAULT_CONFIG.maxCopies,collection[card.id]||0):DEFAULT_CONFIG.maxCopies).fill(card.id));
  for(let i=pool.length-1;i>0;i--){
   const j=Math.floor(Math.random()*(i+1));
   [pool[i],pool[j]]=[pool[j],pool[i]];
  }
  return pool.slice(0,DEFAULT_CONFIG.maxDeckSize);
 };
-root.HV_DATA.DEFAULT_DECK=root.HV_DATA.randomDeck();
+root.HV_DATA.DEFAULT_DECK=Object.freeze([
+ ...['cultista','vigia','sobrevivente','espectro','papa_sonhos','corredor_carmesin','ghostface','velas','grande_impacto'].flatMap(id=>[id,id]),
+ 'lamina','amuleto','espelho','corte','ritual','bruma'
+]);
 root.HV_DATA.validDeck=function(ids,{draft=false,minDeckSize,maxDeckSize,maxCopies}={}){
  const maxSize=maxDeckSize??DEFAULT_CONFIG.maxDeckSize;
  const copiesLimit=maxCopies??DEFAULT_CONFIG.maxCopies;
