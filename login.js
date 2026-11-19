@@ -21,7 +21,7 @@
      db.auth.onAuthStateChange((event,current)=>{
       session=current;
       if(event==='PASSWORD_RECOVERY'){recovering=true;openLogin('reset');}
-      if(event==='SIGNED_OUT'){recovering=false;showAccount(null);}
+      if(event==='SIGNED_OUT'){recovering=false;window.hvMenu.loadAccountDeck(HV_CLOUD.disconnect());showAccount(null);openLogin();}
      });
      resolve(db);
     }catch(error){reject(error);}
@@ -57,7 +57,9 @@
   closeTimer=setTimeout(()=>{screen.hidden=true;$('accountButton').focus();},650);
  }
  function showAccount(user,name){
+  panel.querySelector('p').textContent=user?'Progresso vinculado à sua conta.':'Progresso salvo neste navegador.';
   panel.querySelector('strong').textContent=user?(name||user.user_metadata?.nickname||'Jogador'):'Visitante';
+  $('accountRefresh').hidden=!user;
   $('accountLogin').textContent=user?'Sair da conta':'Entrar ou criar conta';
  }
  async function enterAccount(db,current){
@@ -72,6 +74,9 @@
    if(error)throw error;
   }
   if(request!==profileRequest||session?.user.id!==user.id||recovering)return;
+  const deck=await HV_CLOUD.connect(db,user.id);
+  if(request!==profileRequest||session?.user.id!==user.id)return;
+  window.hvMenu.loadAccountDeck(deck);
   showAccount(user,data.nickname);enterMenu();
  }
  function report(error){
@@ -111,13 +116,19 @@
    try{const db=await client();const {error}=await db.auth.signOut({scope:'local'});if(error)throw error;session=null;}
    catch(error){report(error);return;}finally{lock(false);}
   }
-  showAccount(null);enterMenu();
+  window.hvMenu.loadAccountDeck(HV_CLOUD.disconnect());showAccount(null);enterMenu();
  };
  $('loginRecover').onclick=()=>{showMode('recover');email.focus();};
  $('loginRegister').onclick=()=>{showMode(mode==='login'?'register':'login');(mode==='register'?nickname:email).focus();};
  $('passwordToggle').onclick=e=>{const show=password.type==='password';password.type=show?'text':'password';e.currentTarget.textContent=show?'Ocultar':'Mostrar';e.currentTarget.setAttribute('aria-label',show?'Ocultar senha':'Mostrar senha');e.currentTarget.setAttribute('aria-pressed',String(show));};
  const toggle=open=>{panel.hidden=!open;$('accountButton').setAttribute('aria-expanded',String(open));};
  $('accountButton').onclick=()=>toggle(panel.hidden);
+ $('accountRefresh').onclick=async()=>{
+  $('accountRefresh').disabled=true;
+  try{await HV_CLOUD.refresh();HV_PROGRESSION_UI.wallet();panel.querySelector('p').textContent='Progresso atualizado.';}
+  catch(error){panel.querySelector('p').textContent=error.message;}
+  finally{$('accountRefresh').disabled=false;}
+ };
  $('accountLogin').onclick=async()=>{
   if(!session)return openLogin();
   $('accountLogin').disabled=true;

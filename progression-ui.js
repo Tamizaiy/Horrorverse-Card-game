@@ -117,19 +117,20 @@ function saleAnimation(before,after){
   layer.append(gem);
  }
 }
-$('purchaseYes').onclick=()=>{
+$('purchaseYes').onclick=async()=>{
  if(!checkout)return;
  const {pack,count}=checkout;checkout=null;
+ $('purchaseYes').disabled=true;
  try{
   const before=P.profile().balance;
-  const after=P.buy(pack.id,count).balance;
+  const after=(await P.buy(pack.id,count)).balance;
   $('confirmPurchase').close();
   saleAnimation(before,after);wallet();quote();$('goOpenPacks').hidden=false;window.hvMenu.sound('purchase');
   const vendor=$('shopVendor');
   vendor.src=sellerHappy.src;vendor.classList.remove('sale');void vendor.offsetWidth;vendor.classList.add('sale');
   $('vendorLine').textContent='Ah, o brilho do Rubédio… Volte sempre. De preferência com os bolsos cheios.';
   $('shopError').textContent=`${count} ${count===1?'pacote disponível':'pacotes disponíveis'} no Deck Builder.`;
- }catch(error){$('confirmPurchase').close();$('shopError').textContent=error.message;}
+ }catch(error){$('confirmPurchase').close();$('shopError').textContent=error.message;}finally{$('purchaseYes').disabled=false;}
 };
 $('purchaseNo').onclick=()=>$('confirmPurchase').close();
 $('confirmPurchase').addEventListener('close',()=>{checkout=null;});
@@ -146,15 +147,28 @@ function showHistory(){
  const all=P.profile().history;
  $('historyList').innerHTML=all.length?all.map(r=>`<details><summary>${esc(r.id==='tutorial'?'Tutorial':r.mode)} · +${format(r.total)} Rubédio</summary>${statsHTML(r,true)}</details>`).join(''):'<p>Conclua um duelo para registrar sua pontuação aqui.</p>';
 }
-function showReward(engine,seat,mode){
+let rewardSerial=0;
+async function showReward(engine,seat,mode){
+ const serial=++rewardSerial;
  const won=engine.over.winner===seat&&engine.over.reason!=='abandono';
  const stats=engine.stats?.[seat];
  let result=null;
+ $('rewardPanel').hidden=false;$('rewardTotal').textContent='Salvando…';$('rewardBreakdown').replaceChildren();$('rewardDetails').hidden=true;
+ try{
  if(mode==='Tutorial'){
-  if(won)result=P.completeTutorial();
+  if(won)result=await P.completeTutorial();
  }else if(won&&stats){
-  result=P.award(engine.duelId+':'+seat,P.score(stats,engine.p(seat).sanity),stats,mode);
+  result=await P.award(engine.duelId+':'+seat,P.score(stats,engine.p(seat).sanity),stats,mode,engine.p(seat).sanity);
  }
+ }catch(error){
+ if(serial!==rewardSerial)return null;
+ $('rewardTotal').textContent='Recompensa pendente';
+ $('rewardBreakdown').textContent=error.message;
+ $('rewardDetails').hidden=false;$('rewardDetails').textContent='Tentar salvar novamente';
+ $('rewardDetails').onclick=()=>showReward(engine,seat,mode);return null;
+ }
+ if(serial!==rewardSerial)return null;
+ $('rewardDetails').textContent='Ver estatísticas';
  $('rewardPanel').hidden=!result;
  if(result){
   $('rewardTotal').textContent='+'+format(result.total)+' Rubédio';

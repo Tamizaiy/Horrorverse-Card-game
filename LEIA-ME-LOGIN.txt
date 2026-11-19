@@ -1,4 +1,13 @@
-Horrorverse Alpha 2.3.7
-Copie o conteúdo desta pasta (index.html na raiz) para o repositório usado pelo Netlify.
-O site usa o Supabase Auth do Horrorverse para cadastro, confirmação de e-mail, login e recuperação de senha. O apelido é salvo em hv_profiles.
-Coleção, decks e Rubédio continuam salvos no navegador, inclusive ao trocar de conta. O botão de reset reinicia o progresso local.
+HORRORVERSE Alpha 2.3.7 — Progresso na conta
+1. Antes de publicar esta build, execute supabase/FINALIZAR_237.sql no SQL Editor do mesmo projeto.
+2. Copie os arquivos desta pasta para a raiz do repositório e publique pelo GitHub Desktop.
+3. Entre na conta para inicializar o progresso. Novas contas começam com o deck inicial e 0 Rubédios.
+4. Confirme o tutorial, a compra e abertura de pacotes, o salvamento do deck e o acesso pela mesma conta em outro navegador.
+
+O progresso anterior como visitante fica neste navegador. Ele não é importado automaticamente.
+Contas usam o banco para saldo, cartas, packs, tutorial, deck e recompensas. Configurações de áudio são locais.
+O reset do progresso reinicia o tutorial e o saldo. O login e o apelido são preservados.
+O SQL usa os nomes e as tabelas dos passos anteriores.
+
+LIMITAÇÃO DA ALPHA
+O duelo e o tutorial são executados no navegador. O servidor calcula os pontos dos duelos e impede crédito repetido, mas ainda recebe as estatísticas do cliente. A validação integral do duelo no servidor é uma etapa futura antes de monetizar a economia.

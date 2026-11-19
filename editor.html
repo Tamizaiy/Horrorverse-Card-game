@@ -222,6 +222,9 @@ function renderPacks(){
 }
 $('openPack').onclick=()=>{$('openPack').disabled=true;send('openPack',{type:$('packType').value});};
 function receive(msg){
+ if(msg?.source==='hv-game'&&msg.action==='saveResult'){
+  $('saveDeck').disabled=false;status(msg.error||'✓ Baralho salvo!',!!msg.error);return;
+ }
  if(msg?.source==='hv-game'&&msg.action==='packResult'){
   if(msg.error){status(msg.error,true);renderPacks();return;}
   updateInventory(msg);
@@ -256,7 +259,7 @@ $('add').onclick=$('zoomAdd').onclick=()=>change(true);$('remove').onclick=$('zo
 $('restore').onclick=()=>{deck=starter.slice();tab='deck';redraw();status('Deck inicial restaurado. Salve para usar este baralho.')};
 $('clearDeck').onclick=()=>{if(!deck.length){status('Seu baralho já está vazio.');return}if(!confirm('Remover todas as cartas do baralho atual? O baralho salvo continuará intacto até você salvar outro.'))return;deck=[];tab='collection';redraw();status('Baralho esvaziado. Escolha novas cartas ou use Sortear baralho.')};
 $('randomDeck').onclick=()=>{const result=createRandomDeck();if(!result){status('Não há cartas suficientes no catálogo para sortear um baralho válido.',true);return}deck=result;tab='deck';$('search').value='';$('filter').value='all';updateSubtypes();selected=deck[0];redraw();status('Baralho aleatório válido! Confira as cartas e clique em Salvar baralho para usar.')};
-$('saveDeck').onclick=()=>{if(!valid()){status('Escolha entre 20 e 30 cartas, com até 2 cópias de cada.',true);return}send('save',{deck:deck.slice()});status('✓ Baralho enviado para salvamento no jogo.')};
+$('saveDeck').onclick=()=>{if(!valid()){status('Escolha entre 20 e 30 cartas, com até 2 cópias de cada.',true);return}$('saveDeck').disabled=true;send('save',{deck:deck.slice()});status('Salvando baralho…')};
 $('back').onclick=()=>send('close',{draft:deck.slice()});
 renderHeader();renderDetails();send('ready');
 </script></body></html>

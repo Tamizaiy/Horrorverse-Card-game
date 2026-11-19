@@ -1,3 +1,9 @@
+ALPHA 2.3.7 — Contas com progresso no Supabase
+Antes de publicar, execute supabase/FINALIZAR_237.sql no SQL Editor.
+Consulte LEIA-ME-LOGIN.txt para instalação e limitações.
+Saldo, coleção, pacotes e deck agora pertencem à conta conectada.
+O modo visitante usa o armazenamento local anterior.
+
 ALPHA 2.3.7
 Cadastro e login pelo Supabase. 33 cartas novas. Boosters anteriores custam 100 Rubédios. Reino Cósmico, Criaturas do Submundo e Alta Qualidade Mágica custam 250 cada. Todos entregam cinco cartas.
 

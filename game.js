@@ -59,7 +59,12 @@ function showScreen(id){
  const shopWasOpen=!$('#shopScreen').hidden;
  if(shopWasOpen){HV_PROGRESSION_UI.closeShop();$('#menuRoot').hidden=false;}
  $('#menuWallet').hidden=id!=='home';HV_PROGRESSION_UI.wallet();if(id==='tutorial')HV_PROGRESSION_UI.tutorial();if(id==='history')HV_PROGRESSION_UI.showHistory();if(id==='builder'){window.HV_EDITOR?.open();return}$$('.menu-screen').forEach(el=>el.classList.toggle('active',el.dataset.screen===id));$$('.nav-item').forEach(el=>el.classList.toggle('active',el.dataset.screenGo===id||id==='pvc'&&el.dataset.screenGo==='home'||id==='pvp'&&el.dataset.screenGo==='home'));$('.menu-content').scrollTop=0;if(shopWasOpen)document.querySelector('.menu-nav [data-screen-go=shop]').focus();if(id==='options')applySettings();sound()}
-window.hvMenu={show:showScreen,getDeck:()=>deck.slice(),setDeck(ids){if(validDeck(ids)&&HV_PROGRESS.ownsDeck(ids)){deck=ids.slice();updateDeckCount()}},sound:(kind)=>sound(kind),reduced:()=>settings.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches,onStart:null};
+window.hvMenu={show:showScreen,getDeck:()=>deck.slice(),loadAccountDeck(ids){
+ epoch++;started=false;busy=false;aiRunning=false;lastResult=null;selected=null;preview=null;
+ deck=validDeck(ids)&&HV_PROGRESS.ownsDeck(ids)?ids.slice():defaultDeck.slice();
+ $('#resumeGame').hidden=true;$('#duel').hidden=true;$('#shopScreen').hidden=true;$('#hvEditorOverlay').hidden=true;$('#resultDialog').close();$('#menuRoot').hidden=false;
+ showScreen('home');updateDeckCount();
+},setDeck(ids){if(validDeck(ids)&&HV_PROGRESS.ownsDeck(ids)){deck=ids.slice();updateDeckCount()}},sound:(kind)=>sound(kind),reduced:()=>settings.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches,onStart:null};
 $$('[data-screen-go]').forEach(el=>el.onclick=()=>{unlockAudio();showScreen(el.dataset.screenGo)});
 $('.brand').onclick=e=>{e.preventDefault();showScreen('home')};
 $('#quickPlay').onclick=()=>{unlockAudio();showScreen('pvc')};$('#startPVC').onclick=()=>beginMatch('pvc');$('#startLocal').onclick=()=>beginMatch('local');
@@ -70,12 +75,12 @@ $('#reducedMotion').onchange=e=>{settings.reduced=e.target.checked;applySettings
 $('#optionsSave').onclick=()=>{applySettings();$('#optionsMessage').textContent=store('horrorverse.options.v1',settings)?'Preferências salvas. Seu próximo ritual está pronto.':'Preferências aplicadas nesta sessão; o navegador bloqueou o salvamento.';sound('magic')};
 $('#resetAccount').onclick=async()=>{
  const confirmed=await choose('Resetar conta?',[],{
-  description:'Seu saldo, pacotes, cartas adquiridas, baralho e estatísticas serão apagados neste navegador. Você voltará ao baralho inicial e poderá ganhar os 1.000 Rubédios do Tutorial novamente.',
+  description:'Seu saldo, pacotes, cartas adquiridas, baralho e estatísticas serão apagados do progresso atual. Você voltará ao baralho inicial e poderá ganhar os 1.000 Rubédios do Tutorial novamente.',
   confirm:'Resetar conta'
  });
  if(!confirmed)return;
- try{HV_PROGRESS.resetAccount();}catch{
-  toast('Não foi possível resetar a conta neste navegador.');
+ try{await HV_PROGRESS.resetAccount();}catch(error){
+  toast(error.message||'Não foi possível resetar a conta.');
   return;
  }
  location.reload();
@@ -362,7 +367,7 @@ function resume(){if(!started)return;$('#menuRoot').hidden=true;$('#duel').hidde
 $('#menuInGame').onclick=()=>openMenu();$('#resumeGame').onclick=resume;$('#rulesInGame').onclick=()=>openMenu('tutorial');$('#end').onclick=()=>endTurn();
 $('#reset').onclick=async()=>{if(!canInput()&&!(started&&!busy&&!engine.pending))return;const yes=await choose('Preparar outra mesa?',[],{description:'O duelo atual será encerrado e as cartas serão embaralhadas novamente.',confirm:'Reiniciar duelo'});if(yes)beginMatch(mode)};
 $('#logToggle').onclick=()=>{const log=$('#log');log.hidden=!log.hidden;$('#logToggle').setAttribute('aria-expanded',String(!log.hidden))};
-function showResult(){if(!engine.over||lastResult===engine.over)return;bindResult(()=>beginMatch(mode),()=>{if(mode==='tutorial')started=false;openMenu()});lastResult=engine.over;stopMusic();playFanfare();try{HV_PROGRESSION_UI.showReward(engine,mode==='local'?engine.over.winner:0,mode==='tutorial'?'Tutorial':mode==='local'?'Duelo local':'Contra CPU');}catch(error){$('#rewardPanel').hidden=true;toast(error.message);}$('#resultTitle').textContent=solo()?(engine.over.winner===0?(mode==='tutorial'?'Tutorial concluído':'Você venceu o medo.'):'Você perdeu o duelo.'):('Jogador '+(engine.over.winner+1)+' venceu.');$('#resultReason').textContent=engine.over.reason==='loucura'?'A última centelha de sanidade se apagou.':'Nenhum ser do adversário restou para contar a história.';$('#resultDialog').showModal();pulseAt({x:innerWidth/2,y:innerHeight*.42},'#d7b27b',45)}
+function showResult(){if(!engine.over||lastResult===engine.over)return;bindResult(()=>beginMatch(mode),()=>{if(mode==='tutorial')started=false;openMenu()});lastResult=engine.over;stopMusic();playFanfare();try{HV_PROGRESSION_UI.showReward(engine,mode==='local'?engine.over.winner:0,mode==='tutorial'?'Tutorial':mode==='local'?'Duelo local':'Contra CPU').catch(error=>toast(error.message));}catch(error){$('#rewardPanel').hidden=true;toast(error.message);}$('#resultTitle').textContent=solo()?(engine.over.winner===0?(mode==='tutorial'?'Tutorial concluído':'Você venceu o medo.'):'Você perdeu o duelo.'):('Jogador '+(engine.over.winner+1)+' venceu.');$('#resultReason').textContent=engine.over.reason==='loucura'?'A última centelha de sanidade se apagou.':'Nenhum ser do adversário restou para contar a história.';$('#resultDialog').showModal();pulseAt({x:innerWidth/2,y:innerHeight*.42},'#d7b27b',45)}
 
 async function awaitTable(token){while(token===epoch&&(!$('#menuRoot').hidden||!$('#shopScreen').hidden))await new Promise(r=>setTimeout(r,120));return token===epoch&&!engine.over}
 function scheduleAI(){if(!solo()||!started||engine.active!==1||engine.over||engine.pending||busy||aiRunning||!$('#menuRoot').hidden||!$('#shopScreen').hidden)return;const token=epoch;aiRunning=true;setTimeout(async()=>{try{if(mode==='tutorial')await endTurn(true);else await computerTurn(token)}catch(e){console.warn('IA:',e);toast('O adversário encerrou sua jogada.');if(token===epoch&&!engine.over&&engine.active===1&&!engine.pending&&!busy)await runAction(()=>engine.endTurn())}finally{aiRunning=false;if(token===epoch){render();scheduleAI()}else scheduleAI()}},duration(700))}
