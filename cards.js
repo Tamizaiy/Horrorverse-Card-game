@@ -2590,6 +2590,536 @@ root.HV_DATA={
     "minDeckSize": 20
   }
 };
+root.HV_DATA.CARD_LIBRARY.push(...[
+  {
+    "id": "negacao_passagem",
+    "name": "Negação de Passagem",
+    "periculosidade": 4,
+    "text": "Enquanto estiver ativa, nenhum jogador pode realizar Invocações Especiais, inclusive por efeito.",
+    "kind": "magia",
+    "effects": [],
+    "art": "assets/negacao_passagem.webp",
+    "subtype": "continuous",
+    "cardSubtype": "Contínuo"
+  },
+  {
+    "id": "supernova",
+    "name": "Supernova",
+    "periculosidade": 5,
+    "text": "Envie todos os Seres do campo para a pilha de descarte.",
+    "kind": "magia",
+    "effects": [
+      {
+        "op": "CUSTOM",
+        "action": "supernova"
+      }
+    ],
+    "art": "assets/supernova.webp",
+    "subtype": "normal",
+    "cardSubtype": "Normal"
+  },
+  {
+    "id": "tempestade_penas",
+    "name": "Tempestade de Penas Afiadas",
+    "periculosidade": 4,
+    "text": "Envie todos os Feitiços e Itens do campo para o descarte.",
+    "kind": "magia",
+    "effects": [
+      {
+        "op": "CUSTOM",
+        "action": "tempestade_penas"
+      }
+    ],
+    "art": "assets/tempestade_penas.webp",
+    "subtype": "normal",
+    "cardSubtype": "Normal"
+  },
+  {
+    "id": "crescimento_excessivo",
+    "name": "Crescimento Excessivo",
+    "periculosidade": 3,
+    "text": "Sempre que um jogador perder Sanidade, todos os Seres em campo recebem +1 ATK. O bônus acaba quando este Feitiço sai de campo.",
+    "kind": "magia",
+    "effects": [],
+    "art": "assets/crescimento_excessivo.webp",
+    "subtype": "continuous",
+    "cardSubtype": "Contínuo"
+  },
+  {
+    "id": "alinhamento",
+    "name": "Alinhamento Planetário",
+    "periculosidade": 2,
+    "text": "Quando um Ser Cósmico seu for alvo de um ataque, coloque 1 Escudo em todos os seus Seres Cósmicos.",
+    "kind": "magia",
+    "effects": [],
+    "art": "assets/alinhamento.webp",
+    "subtype": "reaction",
+    "cardSubtype": "Reação",
+    "reactionEvent": "attack"
+  },
+  {
+    "id": "decaimento",
+    "name": "Decaimento de Poder",
+    "periculosidade": 3,
+    "text": "Reduza pela metade o ATK de cada Ser invocado normalmente até a próxima rodada em que ele atacar.",
+    "kind": "magia",
+    "effects": [],
+    "art": "assets/decaimento.webp",
+    "subtype": "continuous",
+    "cardSubtype": "Contínuo"
+  },
+  {
+    "id": "taxacao",
+    "name": "Taxação Desnecessária",
+    "periculosidade": 3,
+    "text": "Quando o oponente comprar uma carta por efeito, compre uma carta também.",
+    "kind": "magia",
+    "effects": [],
+    "art": "assets/taxacao.webp",
+    "subtype": "continuous",
+    "cardSubtype": "Contínuo"
+  },
+  {
+    "id": "marun",
+    "name": "Marun - O Vagante",
+    "periculosidade": 2,
+    "text": "Sem habilidade adicional.",
+    "kind": "ser",
+    "effects": [],
+    "art": "assets/marun.webp",
+    "atk": 2,
+    "def": 2,
+    "terror": 3,
+    "affinity": "Cósmico",
+    "rarity": "comum"
+  },
+  {
+    "id": "gargante",
+    "name": "Gargante",
+    "periculosidade": 2,
+    "text": "Quando um jogador perder Sanidade por efeito de carta ou Ritual, compre 1 carta.",
+    "kind": "ser",
+    "effects": [],
+    "art": "assets/gargante.webp",
+    "atk": 1,
+    "def": 4,
+    "terror": 4,
+    "affinity": "Cósmico",
+    "rarity": "comum"
+  },
+  {
+    "id": "tempta",
+    "name": "Tempta da Nébula Safira",
+    "periculosidade": 3,
+    "text": "Enquanto Blum da Nébula Ametista estiver em campo, este Ser recebe +1 ATK e +1 DEF.",
+    "kind": "ser",
+    "effects": [],
+    "art": "assets/tempta.webp",
+    "atk": 4,
+    "def": 2,
+    "terror": 4,
+    "affinity": "Cósmico",
+    "rarity": "comum"
+  },
+  {
+    "id": "blum",
+    "name": "Blum da Nébula Ametista",
+    "periculosidade": 3,
+    "text": "Enquanto Vog da Nébula Âmbar estiver em campo, este Ser recebe +1 ATK e +1 DEF.",
+    "kind": "ser",
+    "effects": [],
+    "art": "assets/blum.webp",
+    "atk": 2,
+    "def": 4,
+    "terror": 4,
+    "affinity": "Cósmico",
+    "rarity": "comum"
+  },
+  {
+    "id": "vog",
+    "name": "Vog da Nébula Âmbar",
+    "periculosidade": 3,
+    "text": "Enquanto Tempta da Nébula Safira estiver em campo, este Ser recebe +1 ATK e +1 DEF.",
+    "kind": "ser",
+    "effects": [],
+    "art": "assets/vog.webp",
+    "atk": 4,
+    "def": 4,
+    "terror": 2,
+    "affinity": "Cósmico",
+    "rarity": "comum"
+  },
+  {
+    "id": "mente_estelar",
+    "name": "Mente Estelar",
+    "periculosidade": 4,
+    "text": "Sacrifique 1 Cósmico com 5 ou mais de ATK. Recebe +1 ATK por Cósmico em campo (máximo +5).",
+    "kind": "ser",
+    "effects": [],
+    "art": "assets/mente_estelar.webp",
+    "atk": 5,
+    "def": 4,
+    "terror": 5,
+    "affinity": "Cósmico",
+    "rarity": "especial",
+    "summon": {
+      "sacrifices": 1
+    }
+  },
+  {
+    "id": "corsol",
+    "name": "Corsol - O Quebra Mundos",
+    "periculosidade": 4,
+    "text": "Sacrifique 2 Entidades e/ou Cósmicos. Uma vez por turno, descarte 1 Item da mão para destruir 1 suporte inimigo.",
+    "kind": "ser",
+    "effects": [
+      {
+        "op": "CUSTOM",
+        "action": "corsol",
+        "when": "manual",
+        "target": "enemySupport"
+      }
+    ],
+    "art": "assets/corsol.webp",
+    "atk": 7,
+    "def": 3,
+    "terror": 6,
+    "affinity": "Cósmico",
+    "rarity": "especial",
+    "summon": {
+      "sacrifices": 2
+    }
+  },
+  {
+    "id": "adereco_cervideo",
+    "name": "Adereço do Cervídeo",
+    "periculosidade": 2,
+    "text": "Um Infernal recebe +2 DEF até sair de campo.",
+    "kind": "item",
+    "effects": [
+      {
+        "op": "CUSTOM",
+        "action": "adereco_cervideo",
+        "target": "anySer",
+        "targetAffinity": "Infernal"
+      }
+    ],
+    "art": "assets/adereco_cervideo.webp",
+    "cardSubtype": "Relíquia"
+  },
+  {
+    "id": "rosa_sangue",
+    "name": "Rosa de Sangue",
+    "periculosidade": 2,
+    "text": "Um Ser perde 2 ATK até sair de campo.",
+    "kind": "item",
+    "effects": [
+      {
+        "op": "CUSTOM",
+        "action": "rosa_sangue",
+        "target": "anySer"
+      }
+    ],
+    "art": "assets/rosa_sangue.webp",
+    "cardSubtype": "Relíquia"
+  },
+  {
+    "id": "sinete_estranho",
+    "name": "Sinete Estranho",
+    "periculosidade": 3,
+    "text": "Um Ser não pode atacar enquanto permanecer em campo.",
+    "kind": "item",
+    "effects": [
+      {
+        "op": "CUSTOM",
+        "action": "sinete_estranho",
+        "target": "anySer"
+      }
+    ],
+    "art": "assets/sinete_estranho.webp",
+    "cardSubtype": "Relíquia"
+  },
+  {
+    "id": "bracadeiras",
+    "name": "Braçadeiras da Carnificina",
+    "periculosidade": 2,
+    "text": "Um Ser Carnificina recebe +2 ATK até sair de campo.",
+    "kind": "item",
+    "effects": [
+      {
+        "op": "CUSTOM",
+        "action": "bracadeiras",
+        "target": "anySer",
+        "targetAffinity": "Carnificina"
+      }
+    ],
+    "art": "assets/bracadeiras.webp",
+    "cardSubtype": "Equipamento"
+  },
+  {
+    "id": "placa_pedra",
+    "name": "Placa de Pedra Escura",
+    "periculosidade": 3,
+    "text": "A cada turno em campo, o Ser escolhido recebe +1 ATK e −1 DEF.",
+    "kind": "item",
+    "effects": [
+      {
+        "op": "CUSTOM",
+        "action": "placa_pedra",
+        "target": "anySer"
+      }
+    ],
+    "art": "assets/placa_pedra.webp",
+    "cardSubtype": "Relíquia"
+  },
+  {
+    "id": "pressas_obscuro",
+    "name": "Pressas do Obscuro",
+    "periculosidade": 2,
+    "text": "Um Cósmico recebe +2 ATK até sair de campo.",
+    "kind": "item",
+    "effects": [
+      {
+        "op": "CUSTOM",
+        "action": "pressas_obscuro",
+        "target": "anySer",
+        "targetAffinity": "Cósmico"
+      }
+    ],
+    "art": "assets/pressas_obscuro.webp",
+    "cardSubtype": "Relíquia"
+  },
+  {
+    "id": "kit_facas",
+    "name": "Kit de Facas Arcanas",
+    "periculosidade": 0,
+    "text": "Um Assassino recebe +2 ATK até sair de campo.",
+    "kind": "item",
+    "effects": [
+      {
+        "op": "CUSTOM",
+        "action": "kit_facas",
+        "target": "anySer",
+        "targetAffinity": "Assassino"
+      }
+    ],
+    "art": "assets/kit_facas.webp",
+    "cardSubtype": "Equipamento Assassino"
+  },
+  {
+    "id": "capa_metal",
+    "name": "Capa de Metal Reflexivo",
+    "periculosidade": 0,
+    "text": "Um Assassino recebe +2 DEF até sair de campo.",
+    "kind": "item",
+    "effects": [
+      {
+        "op": "CUSTOM",
+        "action": "capa_metal",
+        "target": "anySer",
+        "targetAffinity": "Assassino"
+      }
+    ],
+    "art": "assets/capa_metal.webp",
+    "cardSubtype": "Armadura Improvisada"
+  },
+  {
+    "id": "velas_seita",
+    "name": "Velas da Seita",
+    "periculosidade": 0,
+    "text": "O oponente escolhe e descarta 1 carta da própria mão.",
+    "kind": "item",
+    "effects": [
+      {
+        "op": "CUSTOM",
+        "action": "velas_seita"
+      }
+    ],
+    "art": "assets/velas_seita.webp",
+    "cardSubtype": "Catalisador Ocultista"
+  },
+  {
+    "id": "caixa_amagot",
+    "name": "Caixa de Amagot",
+    "periculosidade": 0,
+    "text": "Procure no baralho 1 Ser com 3 de ATK ou menos, revele-o, coloque-o na mão e embaralhe.",
+    "kind": "item",
+    "effects": [
+      {
+        "op": "CUSTOM",
+        "action": "caixa_amagot"
+      }
+    ],
+    "art": "assets/caixa_amagot.webp",
+    "cardSubtype": "Artefato Selado"
+  },
+  {
+    "id": "espada_sobrecarregada",
+    "name": "Espada Sobrecarregada",
+    "periculosidade": 0,
+    "text": "Dobre o ATK de um Ser e reduza sua DEF a zero. No fim do turno, envie-o ao descarte.",
+    "kind": "item",
+    "effects": [
+      {
+        "op": "CUSTOM",
+        "action": "espada_sobrecarregada",
+        "target": "anySer"
+      }
+    ],
+    "art": "assets/espada_sobrecarregada.webp",
+    "cardSubtype": "Arma Maldita"
+  },
+  {
+    "id": "guardiao_portao",
+    "name": "Guardião do Portão",
+    "periculosidade": 2,
+    "text": "Sem efeito adicional.",
+    "kind": "ser",
+    "effects": [],
+    "art": "assets/guardiao_portao.webp",
+    "atk": 2,
+    "def": 6,
+    "terror": 2,
+    "affinity": "Infernal",
+    "rarity": "comum"
+  },
+  {
+    "id": "diabrete",
+    "name": "Diabrete Infeliz",
+    "periculosidade": 1,
+    "text": "Quando removido do campo, escolha um Feitiço do baralho e adicione-o à mão.",
+    "kind": "ser",
+    "effects": [],
+    "art": "assets/diabrete.webp",
+    "atk": 3,
+    "def": 1,
+    "terror": 3,
+    "affinity": "Infernal",
+    "rarity": "comum"
+  },
+  {
+    "id": "megha",
+    "name": "Megha - O Cão de Duas Cabeças",
+    "periculosidade": 2,
+    "text": "Se destruir um Ser inimigo, pode atacar mais uma vez neste combate.",
+    "kind": "ser",
+    "effects": [],
+    "art": "assets/megha.webp",
+    "atk": 4,
+    "def": 3,
+    "terror": 3,
+    "affinity": "Infernal",
+    "rarity": "comum"
+  },
+  {
+    "id": "reyna",
+    "name": "Reyna - Demônio do Fogo",
+    "periculosidade": 3,
+    "text": "Descarte 1 Ser da mão. Se ele for Infernal, Reyna ganha +2 ATK até sair de campo.",
+    "kind": "ser",
+    "effects": [],
+    "art": "assets/reyna.webp",
+    "atk": 4,
+    "def": 4,
+    "terror": 4,
+    "affinity": "Infernal",
+    "rarity": "especial",
+    "summon": {
+      "discard": 1,
+      "discardKind": "ser"
+    }
+  },
+  {
+    "id": "helial",
+    "name": "Helial - Demônio do Vento",
+    "periculosidade": 3,
+    "text": "Descarte um Item da mão. Se invocado por efeito, recebe +3 ATK até sair de campo.",
+    "kind": "ser",
+    "effects": [],
+    "art": "assets/helial.webp",
+    "atk": 4,
+    "def": 4,
+    "terror": 4,
+    "affinity": "Infernal",
+    "rarity": "especial",
+    "summon": {
+      "discard": 1,
+      "discardKind": "item"
+    }
+  },
+  {
+    "id": "basil",
+    "name": "Basil - Demônio da Água",
+    "periculosidade": 2,
+    "text": "Descarte 1 Ser que não seja Infernal. Ao entrar em campo, um Ser inimigo perde 3 ATK por duas rodadas.",
+    "kind": "ser",
+    "effects": [
+      {
+        "op": "CUSTOM",
+        "action": "basil",
+        "when": "onEnter",
+        "target": "enemySer"
+      }
+    ],
+    "art": "assets/basil.webp",
+    "atk": 4,
+    "def": 3,
+    "terror": 3,
+    "affinity": "Infernal",
+    "rarity": "especial",
+    "summon": {
+      "discard": 1,
+      "discardKind": "ser"
+    }
+  },
+  {
+    "id": "groma",
+    "name": "Groma - Demônio da Terra",
+    "periculosidade": 3,
+    "text": "Descarte um Feitiço da mão. Quando escolhido como alvo de ataque, perde 2 ATK por duas rodadas.",
+    "kind": "ser",
+    "effects": [],
+    "art": "assets/groma.webp",
+    "atk": 4,
+    "def": 5,
+    "terror": 5,
+    "affinity": "Infernal",
+    "rarity": "especial",
+    "summon": {
+      "discard": 1,
+      "discardKind": "magia"
+    }
+  },
+  {
+    "id": "killmagor",
+    "name": "Killmagor - Rei Demônio Elemental",
+    "periculosidade": 6,
+    "text": "Envie Reyna, Helial, Basil e Groma da sua mão ou campo ao descarte. Ao ser invocado, cada jogador perde metade da Sanidade. Uma vez por rodada, descarte uma carta aleatória da mão inimiga ou do campo, exceto esta carta.",
+    "kind": "ser",
+    "effects": [
+      {
+        "op": "CUSTOM",
+        "action": "killmagor",
+        "when": "manual"
+      }
+    ],
+    "art": "assets/killmagor.webp",
+    "atk": 11,
+    "def": 8,
+    "terror": 8,
+    "affinity": "Infernal",
+    "rarity": "especial",
+    "summon": {
+      "reyna": 1,
+      "helial": 1,
+      "basil": 1,
+      "groma": 1
+    }
+  }
+]);
+for(const card of root.HV_DATA.CARD_LIBRARY){
+ if(['negacao_passagem','crescimento_excessivo','taxacao','decaimento','alinhamento'].includes(card.id))card.effects=[{op:'CUSTOM',action:'passive237'}];
+}
 const {CARD_LIBRARY,DEFAULT_CONFIG}=root.HV_DATA;
 root.HV_DATA.randomDeck=function(collection){
  const pool=CARD_LIBRARY.flatMap(card=>Array(collection?Math.min(DEFAULT_CONFIG.maxCopies,collection[card.id]||0):DEFAULT_CONFIG.maxCopies).fill(card.id));

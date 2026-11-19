@@ -57,7 +57,7 @@ P.startTurn=function(){
 };
 P.resolveDrawPhase=function(){
  if(this.p().skipDraw){this.p().skipDraw--;this.info('Compra do turno negada.');}
- else this.draw(this.active,this.cfg.drawPerTurn);
+ else this.draw(this.active,this.cfg.drawPerTurn,true);
  this.runAfterEffects(()=>this.waitPhase('automatic',()=>{
   const actor=this.active;
   // The active player has priority, then the other player. Within each lane, use slot order.
@@ -83,6 +83,10 @@ P.endPhase=function(advance){
 P.resolveEndPhase=function(advance){
  const actor=this.active,round=Math.ceil(this.turn/2);
  const jobs=this.allSer(actor).map(c=>()=>{if(this.find(c.uid)?.zone==='ser'){this.effectChain=null;this.trigger(c,'onTurnEnd',actor);}});
+ for(const c of this.fieldSer()){
+  if(c.stonePlates)jobs.push(()=>{this.modify(c,'atk',c.stonePlates,c,{permanent:true});this.modify(c,'def',-c.stonePlates,c,{permanent:true});});
+  if(c.swordTurn===this.turn)jobs.push(()=>this.destroy(c.uid,{bypassProtection:true,check:false}));
+ }
  if(this.turn%2===0){
   jobs.push(()=>{
    const field=this.players.flatMap(p=>p.field.support).find(c=>c?.id==='circulo_colapso'&&!c.fieldPending);
@@ -147,7 +151,10 @@ P.fearBatch=function(gains,source,beforeApply=()=>{}){
 P.stat=function(card,key){
  let value=base.stat.call(this,card,key);
  if(!this.fieldSer().includes(card))return value;
+ const partner={tempta:'blum',blum:'vog',vog:'tempta'}[card.id];
+ if(partner&&['atk','def'].includes(key)&&this.fieldSer().some(c=>c.id===partner))value++;
  if(key==='atk'){
+  if(card.id==='mente_estelar')value+=Math.min(5,this.fieldSer().filter(c=>this.affinityMatches(c,'Cósmico')).length);
   if(this.affinityMatches(card,'Humano')){
    const humans=this.fieldSer().filter(c=>this.affinityMatches(c,'Humano')).length;
    value+=Math.min(5,humans)*this.continuous('forca_resistencia',card.controller).length;
@@ -158,6 +165,7 @@ P.stat=function(card,key){
   if(card.zeroDefTurn===this.turn)return 0;
   for(const c of this.continuous('queda_continua_desesperada',1-card.controller))value-=Math.floor(this.fear(c)/2);
  }
+ if(key==='atk'&&card.decayed)value=Math.floor(value/2);
  return Math.max(0,value);
 };
 P.fieldCardsWithBinding=function(uid){return this.continuous('parasita_vertiginoso').filter(c=>c.boundUid===uid);};
@@ -173,12 +181,15 @@ P.modify=function(card,stat,amount,source,{permanent=false,duration=1,bound=fals
  card.mods.push({stat,amount,expires:permanent?Number.MAX_SAFE_INTEGER:this.turn+duration-1,...(bound?{bound:source.uid}:{})});
  this.info(card.name+': '+(amount>0?'+':'')+amount+' '+stat.toUpperCase());
 };
-P.draw=function(owner,amount=1){
+P.draw=function(owner,amount=1,normal=false){
  const p=this.p(owner),old=p.hand.length;
  const count=base.draw.call(this,owner,amount);this.recordDraw?.(owner,count);
+ const drawn=p.hand.slice(old).filter(c=>c.kind==='magia');
+ if(!normal&&count){
+  for(const tax of this.continuous('taxacao',1-owner))this.draw(tax.controller,count);
+ }
  const source=this.continuous('sistema_cambio_oculto',owner)[0];
  if(!source)return count;
- const drawn=p.hand.slice(old).filter(c=>c.kind==='magia');
  const jobs=drawn.map(card=>()=>{
   if(!activeSpell(this.find(source.uid)?.card,source.id)||!p.hand.includes(card))return;
   if(p.exchangeTurn!==this.turn){p.exchangeTurn=this.turn;p.exchanges=0;}
@@ -196,6 +207,11 @@ P.changeSanity=function(owner,amount,actor){
  const before=this.p(owner).sanity;
  const previous=this.sanityActor;this.sanityActor=actor;
  let result;try{result=base.changeSanity.call(this,owner,amount);}finally{this.sanityActor=previous;}
+ if(result<before){
+  for(const spell of this.continuous('crescimento_excessivo'))
+   for(const c of this.fieldSer())this.modify(c,'atk',1,spell,{permanent:true,bound:true});
+  if(!this.directSanity)for(const c of this.fieldSer().filter(c=>c.id==='gargante'))this.draw(c.controller);
+ }
  if(result<before)for(const c of this.fieldSer())this.trigger(c,'onSanityLoss',c.controller);
  return result;
 };
@@ -251,9 +267,45 @@ P.summonFrom=function(source,actor,id,clean=false){
  ],1,1,ids=>summon(ids[0]===hand.uid?hand:deck));
  else summon(hand||deck);
 };
+P.searchToHand=function(source,actor,filter){
+ const p=this.p(actor),options=p.deck.filter(filter);
+ if(options.length)this.pick(source,actor,'Escolha uma carta do baralho',options,1,1,ids=>{
+  const i=p.deck.findIndex(c=>c.uid===ids[0]);
+  if(i>=0){const card=p.deck.splice(i,1)[0];p.hand.push(card);this.info(card.name+' revelado e adicionado à mão.');this.shuffle(p.deck);}
+ });
+};
 P.customEffect=function(e,source,target,actor){
  const found=this.find(target)?.card,p=this.p(actor);
  switch(e.action){
+ case 'passive237':return;
+ case 'supernova':
+ case 'tempestade_penas':{
+  const list=e.action==='supernova'?this.fieldSer():this.players.flatMap(p=>p.field.support.filter(Boolean));
+  for(const c of list)this.destroy(c.uid,{bypassProtection:true,check:false});
+  return;
+ }
+ case 'corsol':return this.pick(source,actor,'Descarte um Item da mão',p.hand.filter(c=>c.kind==='item'),1,1,ids=>{this.discardCards(actor,ids);this.destroy(target,{sourceUid:source.uid});});
+ case 'basil':return this.modify(found,'atk',-3,source,{duration:4});
+ case 'rosa_sangue':return this.modify(found,'atk',-2,source,{permanent:true});
+ case 'adereco_cervideo':case 'capa_metal':return this.modify(found,'def',2,source,{permanent:true});
+ case 'bracadeiras':case 'pressas_obscuro':case 'kit_facas':return this.modify(found,'atk',2,source,{permanent:true});
+ case 'sinete_estranho':found.sealedUntil=Number.MAX_SAFE_INTEGER;return;
+ case 'placa_pedra':found.stonePlates=(found.stonePlates||0)+1;return;
+ case 'espada_sobrecarregada':this.modify(found,'atk',this.stat(found,'atk'),source,{permanent:true});found.zeroDefTurn=this.turn;found.swordTurn=this.turn;return;
+ case 'velas_seita':if(this.p(1-actor).hand.length)this.discardChoice(source,1-actor,1,()=>{});return;
+ case 'caixa_amagot':return this.searchToHand(source,actor,c=>c.kind==='ser'&&c.atk<=3);
+ case 'killmagor':{
+  const hand=this.p(1-actor).hand,field=this.players.flatMap(p=>[...p.field.ser,...p.field.support].filter(Boolean)).filter(c=>c!==source);
+  const choices=[];
+  if(hand.length)choices.push({uid:'hand',name:'Descartar da mão inimiga'});
+  if(field.length)choices.push({uid:'field',name:'Enviar uma carta do campo ao descarte'});
+  source.kingRound=Math.ceil(this.turn/2);
+  if(choices.length)this.pick(source,actor,'Escolha o efeito de Killmagor',choices,1,1,ids=>{
+   const pool=ids[0]==='hand'?hand:field,c=pool[Math.floor(Math.random()*pool.length)];
+   if(ids[0]==='hand')this.discardCards(1-actor,[c.uid]);else this.destroy(c.uid,{bypassProtection:true});
+  });
+  return;
+ }
  case 'exchangeSpell':case 'redirectFear':case 'roundDrain':case 'combatReturn':case 'humanAura':case 'slipAttack':return;
  case 'bindParasite':source.boundUid=target;return;
  case 'damageTerror':return this.damageTerror(found,e.amount,source);
@@ -281,6 +333,7 @@ P.customEffect=function(e,source,target,actor){
   });
  });
  case 'corruptRevive':{
+  if(this.continuous('negacao_passagem').length)return;
   if(!this.destroy(target,{sourceUid:source.uid,check:false}))return;
   const pool=p.grave.filter(c=>c.kind==='ser'&&!c.summon?.onlyBy);
   const count=Math.min(2,p.field.ser.filter(c=>!c).length,pool.length);
@@ -328,6 +381,8 @@ P.canCorruptRevive=function(card,actor){
  return p.field.ser.includes(null)&&!card.shields&&!this.effectDestructionImmune(card)&&grave+Number(addsCard)>=2;
 };
 P.effectAvailable=function(card,actor){
+ if(card.id==='corsol'&&!this.p(actor).hand.some(c=>c.kind==='item'))return false;
+ if(card.id==='killmagor')return card.kingRound!==Math.ceil(this.turn/2)&&(this.p(1-actor).hand.length>0||this.players.flatMap(p=>[...p.field.ser,...p.field.support].filter(Boolean)).some(c=>c!==card));
  const e=card.kind==='ser'?this.manualEffect(card):card.effects?.[0];
  if(!e)return false;
  if((e.discardCost||card.discardCost||0)>this.p(actor).hand.length)return false;
@@ -370,16 +425,25 @@ P.offerArchmage=function(event,resolve){
 };
 P.summonMaterials=function(c,actor=this.active){
  const req=c.summon||{},p=this.p(actor),allies=this.allSer(actor);
- return {
+ const pool={
   sacrifices:req.sacrificeAffinity&&req.sacrificeMinimum===req.sacrifices?allies.filter(x=>this.affinityMatches(x,req.sacrificeAffinity)):allies,
   items:p.field.support.filter(x=>x?.kind==='item'),
   spells:p.field.support.filter(x=>x?.kind==='magia'),
   discard:p.hand.filter(x=>x!==c&&(!req.discardKind||x.kind===req.discardKind)),
   banish:p.grave.filter(x=>x.kind==='ser')
  };
+ if(c.id==='mente_estelar')pool.sacrifices=allies.filter(x=>this.affinityMatches(x,'Cósmico')&&this.stat(x,'atk')>=5);
+ if(c.id==='corsol')pool.sacrifices=allies.filter(x=>['Entidade','Cósmico'].some(a=>this.affinityMatches(x,a)));
+ if(c.id==='basil')pool.discard=pool.discard.filter(x=>!this.affinityMatches(x,'Infernal'));
+ if(c.id==='killmagor')for(const id of ['reyna','helial','basil','groma'])pool[id]=[...p.hand,...allies].filter(x=>x.id===id);
+ return pool;
 };
 P.validateSummonExtras=function(card,opts,actor=this.active){
  const req=card.summon||{},p=this.p(actor),pool=this.summonMaterials(card,actor);
+ if(card.rarity==='especial'&&this.continuous('negacao_passagem').length)this.fail('Negação de Passagem impede Invocações Especiais.');
+ for(const key of ['sacrifices','reyna','helial','basil','groma']){
+  if(req[key]&&(!opts[key]||opts[key].length!==req[key]||opts[key].some(id=>!pool[key].some(c=>c.uid===id))))this.fail('Material de invocação inválido: '+key);
+ }
  if(req.onlyBy)this.fail(card.name+' só pode ser invocado pelo efeito de '+root.HV_DATA.CARD_LIBRARY.find(c=>c.id===req.onlyBy).name+'.');
  if(req.sanity&&p.sanity<=req.sanity)this.fail('Sanidade insuficiente para pagar a invocação.');
  if(req.sacrificeAffinity&&(!Array.isArray(opts.sacrifices)||opts.sacrifices.filter(id=>this.allSer(actor).some(c=>c.uid===id&&this.affinityMatches(c,req.sacrificeAffinity))).length<req.sacrificeMinimum))
@@ -395,6 +459,12 @@ P.paySummonExtras=function(card,opts,actor){
  if(req.banish){
   p.banished??=[];
   for(const id of opts.banish)p.banished.push(p.grave.splice(p.grave.findIndex(c=>c.uid===id),1)[0]);
+ }
+ if(card.id==='reyna'&&this.affinityMatches(this.find(opts.discard[0]).card,'Infernal'))this.modify(card,'atk',2,card,{permanent:true});
+ if(card.id==='killmagor')for(const key of ['reyna','helial','basil','groma']){
+  const id=opts[key][0];
+  if(this.find(id).zone==='hand')this.discardCards(actor,[id]);
+  else this.destroy(id,{sacrifice:true,bypassProtection:true,check:false});
  }
  if(req.discard)this.discardCards(actor,opts.discard);
  if(req.sanity)this.changeSanity(actor,-req.sanity);
@@ -422,6 +492,7 @@ P.attackDirect=function(uid,skipReaction=false){
  }
  const extra=c?.hasAttacked&&c.extraDirectTurn===this.turn;
  const result=base.attackDirect.call(this,uid);
+ if(c)delete c.decayed;
  if(extra){delete c.extraDirectTurn;this.damageTerror(c,2,c,{send:true});this.checkWin();}
  return result;
 };

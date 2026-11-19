@@ -2,7 +2,7 @@
 'use strict';
 const cards=root.HV_DATA.CARD_LIBRARY;
 const key='horrorverse.progression.v1';
-const cost=200;
+
 const boosters=root.HV_BOOSTERS;
 const starter=root.HV_DATA.DEFAULT_DECK.reduce((counts,id)=>(counts[id]=(counts[id]||0)+1,counts),{});
 const cardsById=new Map(cards.map(c=>[c.id,c]));
@@ -47,6 +47,7 @@ function persist(p){
 function buy(type,quantity){
  const p=profile();
  if(!boosters.packs.some(pack=>pack.id===type)||!Number.isSafeInteger(quantity)||quantity<1||quantity>99)throw Error('Escolha de 1 a 99 pacotes.');
+ const cost=boosters.get(type).price;
  if(p.balance<cost*quantity)throw Error('Rubédio insuficiente para essa compra.');
  p.balance-=cost*quantity;
  p.packs[type]=(p.packs[type]||0)+quantity;
@@ -120,10 +121,9 @@ function completeTutorial(){
 function resetAccount(){
  const storage=root.localStorage;
  if(!storage)throw Error('Armazenamento indisponível.');
- const tutorial=Boolean(profile().tutorial);
  storage.removeItem('horrorverse.deck.v1');
  storage.removeItem('horrorverse.builder.draft.v05');
- persist({...fresh(),tutorial});
+ persist(fresh());
 }
-root.HV_PROGRESS={profile,buy,open,rarity,cost,collection,ownsDeck,preserveLegacyDeck,markSeen,score,award,completeTutorial,resetAccount};
+root.HV_PROGRESS={profile,buy,open,rarity,collection,ownsDeck,preserveLegacyDeck,markSeen,score,award,completeTutorial,resetAccount};
 })(typeof window!=='undefined'?window:globalThis);

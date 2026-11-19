@@ -38,9 +38,9 @@ assert.equal(Object.values(ownedBefore).reduce((sum,n)=>sum+n,0),24);
 assert(HV_DATA.validDeck(HV_DATA.DEFAULT_DECK));
 assert(HV_PROGRESS.ownsDeck(HV_DATA.DEFAULT_DECK));
 assert(!HV_PROGRESS.ownsDeck([...HV_DATA.DEFAULT_DECK,'zumbi']));
-assert.deepEqual(HV_BOOSTERS.packs.map(pack=>pack.cards.length),[18,18,15,28,11]);
+assert.deepEqual(HV_BOOSTERS.packs.map(pack=>pack.cards.length),[17,18,15,20,20,12,12,12]);
 const set=new Set(HV_BOOSTERS.packs.flatMap(pack=>pack.cards));
-assert.equal(set.size,90);
+assert.equal(set.size,126);
 assert(!HV_DATA.DEFAULT_DECK.some(id=>set.has(id)));
 assert([...set].every(id=>HV_DATA.CARD_LIBRARY.some(c=>c.id===id)));
 HV_PROGRESS.buy('aberracoes',2);
@@ -53,12 +53,12 @@ assert(!HV_PROGRESS.profile().discoveries[drops[0].id]);
 assert(HV_PROGRESS.ownsDeck([...HV_DATA.DEFAULT_DECK,drops[0].id,drops[0].id]));
 assert(!HV_PROGRESS.ownsDeck([...HV_DATA.DEFAULT_DECK,drops[0].id,drops[0].id,drops[0].id]));
 assert.equal(HV_PROGRESS.profile().packs.aberracoes,1);assert.equal(HV_PROGRESS.profile().owned[drops[0].id],5);
-assert.equal(HV_PROGRESS.profile().balance,600);assert.throws(()=>HV_PROGRESS.buy('aberracoes',4),/insuficiente/);
+assert.equal(HV_PROGRESS.profile().balance,800);assert.throws(()=>HV_PROGRESS.buy('aberracoes',9),/insuficiente/);
 const rows=HV_PROGRESS.score(s,g.p(0).sanity);
 assert(rows.some(r=>r.label==='Dano Exato'));assert(rows.some(r=>r.label==='Vitória Intacta'));
 const reward=HV_PROGRESS.award(g.duelId,rows,s,'Contra CPU');
 assert.equal(HV_PROGRESS.award(g.duelId,rows,s,'Contra CPU').total,reward.total);
-assert.equal(HV_PROGRESS.profile().balance,600+reward.total);
+assert.equal(HV_PROGRESS.profile().balance,800+reward.total);
 
 for(const externalFear of [false,true]){
  g.cfg.winByExtermination=false;g.reset();phases();
@@ -106,9 +106,10 @@ console.log('OK: tutorial guiado, fases pausadas, bônus, compras, duplicatas, e
 {
  const cards=HV_DATA.CARD_LIBRARY;
  const starter=new Set(HV_DATA.DEFAULT_DECK);
- const prerelease=new Set(HV_BOOSTERS.packs.slice(0,3).flatMap(pack=>pack.cards));
+ 
  for(const [type,id] of [['item','itens'],['magia','feiticos']]){
   const pack=HV_BOOSTERS.get(id);
+  const prerelease=new Set(HV_BOOSTERS.packs.filter(p=>p.id!==id).flatMap(p=>p.cards));
   const eligible=cards.filter(c=>c.kind===type&&!starter.has(c.id)&&!prerelease.has(c.id)).map(c=>c.id);
   assert.deepEqual(new Set(pack.cards),new Set(eligible));
   assert(fs.existsSync(pack.art));
@@ -118,7 +119,7 @@ console.log('OK: tutorial guiado, fases pausadas, bônus, compras, duplicatas, e
   assert(pulls.every(c=>c.kind===type&&pack.cards.includes(c.id)));
   assert(HV_PROGRESS.collection()[pulls[0].id]>0);
  }
- assert.equal(cards.filter(c=>!HV_BOOSTERS.isReleased(c.id)).length,24);
+ assert.equal(cards.filter(c=>!HV_BOOSTERS.isReleased(c.id)).length,21);
  const profile=HV_PROGRESS.profile();
  profile.owned.michael=2;
  profile.legacyDeck.michael=1;

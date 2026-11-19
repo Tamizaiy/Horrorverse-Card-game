@@ -18,13 +18,14 @@ function send(){
  const saved=root.hvMenu?.getDeck()||[],raw=read(DRAFT),stock=inventory();
  const draft=valid(raw?.deck,{draft:true})?raw.deck:null;
  const ownedCards=catalogue.filter(c=>stock.owned[c.id]>0).map(toView);
- frame.contentWindow.postMessage({source:'hv-game',action:'init',cards:ownedCards,starter:root.HV_DATA.DEFAULT_DECK,...stock,deck:saved,draft},'*');
+ frame.contentWindow.postMessage({source:'hv-game',action:'init',reduced:root.hvMenu.reduced(),cards:ownedCards,starter:root.HV_DATA.DEFAULT_DECK,...stock,deck:saved,draft},'*');
 }
 function open(){overlay=document.getElementById('hvEditorOverlay');frame=document.getElementById('hvEditorFrame');opener=document.activeElement;overlay.hidden=false;frame.focus();send()}
 function close(){if(!overlay)return;overlay.hidden=true;root.hvMenu?.show('home');opener?.focus?.()}
 root.HV_EDITOR={open,close,validDeck:valid};
 window.addEventListener('message',e=>{if(!frame||e.source!==frame.contentWindow||e.data?.source!=='hv-builder')return;
  const m=e.data;
+ if(m.action==='sound'&&['tear','discover','inspect','remove'].includes(m.kind)){root.hvMenu.sound(m.kind);return;}
  if(m.action==='ready'){send();return}
  if(m.action==='markSeen'){
   try{progress.markSeen(m.id);}catch(error){console.warn(error.message);}

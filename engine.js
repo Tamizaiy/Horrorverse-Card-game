@@ -36,7 +36,7 @@ class HorrorverseEngine{
   });
   this.info('Duelo iniciado. Cada jogador recebe até '+this.cfg.initialHandSize+' cartas.');
   if(this.cfg.turnPhases&&this.startTurn)this.startTurn();
-  else this.draw(this.active,this.cfg.drawPerTurn);
+  else this.draw(this.active,this.cfg.drawPerTurn,true);
   return this;
  }
  setDecks(deck0,deck1){
@@ -278,7 +278,10 @@ class HorrorverseEngine{
    }
   }
  }
- enterSer(card,actor,{summon=false,plan={},playEffects=false}={}){
+ enterSer(card,actor,{summon=false,plan={},playEffects=false,fromHand=false}={}){
+  if(card.id==='helial'&&!fromHand)this.modify(card,'atk',3,card,{permanent:true});
+  if(fromHand&&card.rarity==='comum'&&this.continuous?.('decaimento').length)card.decayed=true;
+  if(card.id==='killmagor'&&summon)for(const owner of [0,1])this.changeSanity(owner,-Math.floor(this.p(owner).sanity/2),actor);
   if(card.id==='gek_felliax'&&!card.gekTrack)card.gekTrack={clean:summon&&playEffects&&!card.gekReturned,own:0};
   this.refreshFearAuras();
   if(playEffects)this.trigger(card,'onSummon',actor,plan);
@@ -288,6 +291,7 @@ class HorrorverseEngine{
  }
  summonByEffect(uid,actor,sourceId){
   const player=this.p(actor),found=this.find(uid),slot=player.field.ser.indexOf(null);
+  if(this.continuous?.('negacao_passagem').length)return;
   if(found?.zone!=='hand'||found.owner!==actor||found.card.kind!=='ser'||(found.card.summon?.onlyBy&&found.card.summon.onlyBy!==sourceId)||slot<0)return;
   player.hand.splice(found.index,1);
   player.field.ser[slot]=found.card;
@@ -312,7 +316,7 @@ class HorrorverseEngine{
     if(p.specialUsed>=this.cfg.specialSummonsPerTurn)this.fail('Limite de invocações especiais neste turno.');for(const [k,num] of Object.entries({sacrifices:req.sacrifices||0,items:req.items||0,spells:req.spells||0})){let ids=opts[k]||[];if(ids.length!==num||new Set(ids).size!==ids.length)this.fail('Requisito de '+k+': escolha '+num+' carta(s).');let allowed=k==='sacrifices'?this.allSer(this.active):this.p().field.support.filter(x=>x&&(k==='items'?x.kind==='item':x.kind==='magia'));if(!ids.every(id=>allowed.some(x=>x.uid===id)))this.fail('Material de invocação inválido.')}for(const k of ['sacrifices','items','spells'])for(const id of opts[k]||[])this.destroy(id,{bypassProtection:true,sacrifice:true});this.spendFear(payment);if(defCost)defCost.zeroDefTurn=this.turn;p.specialUsed++}
   }
   p.hand.splice(p.hand.indexOf(c),1);p.field[lane][slot]=c;this.info('Jogador '+(this.active+1)+' posicionou '+c.name+'.');
-  if(c.kind==='ser'){this.paySummonExtras?.(c,opts,this.active);this.enterSer(c,this.active,{summon:true,plan:summonPlan,playEffects:true});this.checkWin();return}
+  if(c.kind==='ser'){this.paySummonExtras?.(c,opts,this.active);this.enterSer(c,this.active,{summon:true,plan:summonPlan,playEffects:true,fromHand:true});this.checkWin();return}
   if(c.subtype==='field'){
    const actor=this.active;this.recordAttempt?.(c,actor);
    const resolve=()=>{this.recordSupport?.(c,actor);c.fieldPending=false;c.fieldOrder=++this.fieldOrder;this.info('Campo ativo: '+c.name);this.triggerFields(actor,'onSupportActivation',c);this.spellActivated?.(c);};
@@ -368,10 +372,10 @@ class HorrorverseEngine{
    }
    break;
   }
-  case E.TOKEN:{let lane=this.p(actor).field.ser;let i=lane.findIndex(x=>!x);if(i>=0){let card=this.clone({id:'token',name:e.name||'Token',kind:'ser',rarity:'token',atk:e.atk||1,def:e.def||1,terror:1,emoji:'🌑',effects:[]},actor);card.token=true;lane[i]=card;this.info('Token invocado: '+card.name);this.enterSer(card,actor,{summon:true})}break}
+  case E.TOKEN:{if(this.continuous?.('negacao_passagem').length)break;let lane=this.p(actor).field.ser;let i=lane.findIndex(x=>!x);if(i>=0){let card=this.clone({id:'token',name:e.name||'Token',kind:'ser',rarity:'token',atk:e.atk||1,def:e.def||1,terror:1,emoji:'🌑',effects:[]},actor);card.token=true;lane[i]=card;this.info('Token invocado: '+card.name);this.enterSer(card,actor,{summon:true})}break}
   case E.SEAL:{let f=this.find(t);if(f){f.card.sealedUntil=this.turn+Math.max(0,(e.duration??1)-1);this.info(f.card.name+' foi selado.')}break}
   case E.CONTROL:{let f=this.find(t);if(f){let to=actor;let dest=this.p(to).field.ser.findIndex(x=>!x);if(dest<0)break;this.p(f.owner).field.ser[f.index]=null;f.card.controller=to;f.card.controlUntil=this.turn+Math.max(0,(e.duration??1)-1);this.p(to).field.ser[dest]=f.card;this.info('Controle de '+f.card.name+' alterado.');this.enterSer(f.card,to)}break}
-  case E.REVIVE:{let dead=this.p(actor).grave.find(x=>x.uid===t&&x.kind==='ser');let s=this.p(actor).field.ser.findIndex(x=>!x);if(dead&&s>=0&&!dead.summon?.onlyBy){this.p(actor).grave=this.p(actor).grave.filter(x=>x.uid!==t);dead.damage=0;dead.terrorCurrent=Math.max(1,dead.terror||1);dead.mods=[];dead.counters={};dead.shields=0;dead.sealedUntil=0;dead.hasAttacked=false;dead.controlUntil=0;dead.controller=actor;this.p(actor).field.ser[s]=dead;this.info(dead.name+' ressuscitou.');this.enterSer(dead,actor,{summon:true})}break}
+  case E.REVIVE:{let dead=this.p(actor).grave.find(x=>x.uid===t&&x.kind==='ser');let s=this.p(actor).field.ser.findIndex(x=>!x);if(!this.continuous?.('negacao_passagem').length&&dead&&s>=0&&!dead.summon?.onlyBy){this.p(actor).grave=this.p(actor).grave.filter(x=>x.uid!==t);dead.damage=0;dead.terrorCurrent=Math.max(1,dead.terror||1);dead.mods=[];dead.counters={};dead.shields=0;dead.sealedUntil=0;dead.hasAttacked=false;dead.controlUntil=0;dead.controller=actor;this.p(actor).field.ser[s]=dead;this.info(dead.name+' ressuscitou.');this.enterSer(dead,actor,{summon:true})}break}
   case E.SUMMON:this.summonByEffect(t,actor);break;
   case E.FIELD:case E.NEGATE:case E.BATTLE_ATK:case E.PREVENT_DEF:case E.PREVENT_SANITY:break;
   default:this.info('Efeito não reconhecido: '+e.op)}this.checkWin();if(this.over)break}}
@@ -395,10 +399,11 @@ class HorrorverseEngine{
   }
   const controller=card.controller,source=this.find(sourceUid)?.card;
   const returnToHand=!sacrifice&&!consumed&&zone==='ser'&&((combat&&this.continuous?.('fila_espera_submundo').length)||(card.id==='intangivel'&&source?.kind==='magia'));
-  if(card.boundUid)for(const c of this.fieldSer())c.mods=c.mods.filter(m=>m.bound!==card.uid);
+  if(card.boundUid||card.id==='crescimento_excessivo')for(const c of this.fieldSer())c.mods=c.mods.filter(m=>m.bound!==card.uid);
   if(zone==='ser')for(const c of this.fieldCardsWithBinding?.(card.uid)||[])delete c.boundUid;
   if(card.gekTrack)card.gekReturned=true;
   this.p(owner).field[zone][index]=null;
+  delete card.decayed;delete card.stonePlates;delete card.swordTurn;delete card.kingRound;
   if(!card.token){
    Object.assign(card,{damage:0,mods:returnToHand?card.mods.filter(m=>m.untilGrave):[],shields:0,counters:{},sealedUntil:0,hasAttacked:false,controlUntil:0,controller:card.owner,__activated:false,zeroDefTurn:0,roundShields:[]});
    Object.assign(card,{terrorCurrent:Math.max(1,card.terror||1),continuousActive:false,fieldPending:false,effectTurns:{},revivalRound:0,extraDirectTurn:0});
@@ -408,6 +413,7 @@ class HorrorverseEngine{
   }
   this.refreshFearAuras();
   this.info(card.name+(sacrifice?' sacrificado(a).':consumed?' consumido(a).':' destruído(a).'));
+  if(card.id==='diabrete')this.searchToHand(card,controller,c=>c.kind==='magia');
   if(!sacrifice&&!consumed)this.trigger(card,'onDestroyed',controller);
   if(combat)this.trigger(card,'onCombatDestroyed',controller);
   if(card.subtype==='field'){
@@ -435,7 +441,7 @@ class HorrorverseEngine{
   if(a.card.hasAttacked&&a.card.extraDirectTurn!==this.turn)this.fail('Este Ser já atacou no turno.');
   if(a.card.sealedUntil>=this.turn)this.fail('Este Ser está selado.');
   const card=a.card,owner=1-this.active,atk=this.battleAtk(card),before=this.p(owner).sanity;
-  const after=this.changeSanity(owner,-this.directDamage(atk),this.active);
+  let after;this.directSanity=true;try{after=this.changeSanity(owner,-this.directDamage(atk),this.active);}finally{this.directSanity=false;}
   const damage=before-after;
   card.hasAttacked=true;
   this.info(card.name+' atacou diretamente a Sanidade do Jogador '+(owner+1)+' ('+before+' → '+after+'; dano '+damage+').');
@@ -480,7 +486,9 @@ class HorrorverseEngine{
   if(after===0){destroyed=this.destroy(defender.uid,{bypassProtection:true,sourceUid:attacker.uid,combat:true,check:false})}
   if(damage>0)this.trigger(attacker,'onCombatDamage',this.active,{}, {target:targetUid});
   if(def===0)this.trigger(attacker,'onZeroDefenseAttack',this.active);
+  delete attacker.decayed;
   if(destroyed){
+   if(attacker.id==='megha')attacker.hasAttacked=false;
    this.trigger(attacker,'onCombatDestroy',this.active);
    this.triggerFields(this.active,'onAllyCombatDestroy',attacker);
   }
@@ -490,7 +498,7 @@ class HorrorverseEngine{
     atk,def,damage,before,after,maxTerror:total,blocked:rawDamage===0,shielded,destroyed};
  }
 
- endTurn(){if(this.over||this.pending)this.fail('Não é possível encerrar o turno agora.');for(const card of this.allSer(this.active)){this.trigger(card,'onTurnEnd',this.active);if(this.over)return;}this.active=1-this.active;this.turn++;let p=this.p();p.commonUsed=0;p.specialUsed=0;for(let owner=0;owner<2;owner++){for(const c of this.allSer(owner)){c.mods=c.mods.filter(m=>m.expires>=this.turn);if(c.sealedUntil<this.turn)c.sealedUntil=0;if(c.controller===this.active)c.hasAttacked=false;}for(const s of this.p(owner).field.support)if(s&&s.mods)s.mods=s.mods.filter(m=>m.expires>=this.turn)}this.draw(this.active,this.cfg.drawPerTurn);this.info('Turno de Jogador '+(this.active+1)+'.');if(this.turn>=this.cfg.maxTurns)this.info('Aviso: atingido limite sugerido de turnos, sem resultado automático.');this.checkWin()}
+ endTurn(){if(this.over||this.pending)this.fail('Não é possível encerrar o turno agora.');for(const card of this.allSer(this.active)){this.trigger(card,'onTurnEnd',this.active);if(this.over)return;}this.active=1-this.active;this.turn++;let p=this.p();p.commonUsed=0;p.specialUsed=0;for(let owner=0;owner<2;owner++){for(const c of this.allSer(owner)){c.mods=c.mods.filter(m=>m.expires>=this.turn);if(c.sealedUntil<this.turn)c.sealedUntil=0;if(c.controller===this.active)c.hasAttacked=false;}for(const s of this.p(owner).field.support)if(s&&s.mods)s.mods=s.mods.filter(m=>m.expires>=this.turn)}this.draw(this.active,this.cfg.drawPerTurn,true);this.info('Turno de Jogador '+(this.active+1)+'.');if(this.turn>=this.cfg.maxTurns)this.info('Aviso: atingido limite sugerido de turnos, sem resultado automático.');this.checkWin()}
  checkWin(){if(this.over)return this.over;for(let i=0;i<2;i++)if(this.p(i).sanity<=0){this.over={winner:1-i,reason:'loucura'};this.info('Vitória J'+(2-i)+' por LOUCURA!');return this.over}if(this.cfg.winByExtermination&&!this.choices.length){for(let i=0;i<2;i++){let player=this.p(i);if(!player.startedWithSer)continue;const hasSer=[...player.hand,...player.deck,...this.allSer(0),...this.allSer(1)].some(card=>card.kind==='ser'&&!card.token&&card.owner===i);if(!hasSer){this.over={winner:1-i,reason:'extermínio'};this.info('Vitória J'+(2-i)+' por EXTERMÍNIO!');return this.over}}}return null}
  getState(){return {turn:this.turn,phase:this.phase,phaseTrace:this.phaseTrace,active:this.active,players:this.players,pending:this.pending,over:this.over,log:this.log,config:this.cfg}}
 }

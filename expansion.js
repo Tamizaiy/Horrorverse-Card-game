@@ -164,7 +164,8 @@ P.attack=function(attacker,target,skipReaction=false){
  const a=this.find(attacker),t=this.find(target);
  this.requirePhase?.('combat');
  if(!skipReaction&&!this.over&&!this.pending&&a?.zone==='ser'&&a.owner===this.active&&!a.card.hasAttacked&&a.card.sealedUntil<this.turn&&t?.zone==='ser'&&t.owner!==this.active){
-  const reactions=this.p(t.owner).field.support.filter(c=>c?.reactionEvent==='attack'&&!c.__activated&&(c.id!=='desvio_alvo'||this.allSer(t.owner).length>1));
+  if(t.card.id==='groma')this.modify(t.card,'atk',-2,t.card,{duration:4});
+  const reactions=this.p(t.owner).field.support.filter(c=>(c?.id!=='alinhamento'||this.affinityMatches(t.card,'Cósmico'))&&c?.reactionEvent==='attack'&&!c.__activated&&(c.id!=='desvio_alvo'||this.allSer(t.owner).length>1));
   if(reactions.length){this.pending={kind:'attack',actor:this.active,cardUid:attacker,targetUid:target,responder:t.owner,reactions:reactions.map(c=>c.uid)};return {pending:true};}
  }
  return original.attack.call(this,attacker,target);
@@ -177,6 +178,7 @@ P.respond=function(uid=null,redirect=null){
  if(r?.id==='desvio_alvo'&&(!this.allSer(pending.responder).some(c=>c.uid===redirect)||redirect===pending.targetUid))this.fail('Escolha outro Ser aliado para receber o ataque.');
  this.pending=null;
  if(r){this.recordReaction?.(r,pending.responder,pending.actor);r.__activated=true;this.destroy(uid,{bypassProtection:true,consumed:true});this.triggerFields(pending.responder,'onSupportActivation',r);
+  if(r.id==='alinhamento')for(const c of this.allSer(pending.responder))if(this.affinityMatches(c,'Cósmico'))c.shields++;
   if(r.id==='cobertura_defensiva'){const a=this.find(pending.cardUid)?.card;if(a)a.hasAttacked=true;this.info('Cobertura Defensiva negou o ataque.');return {negated:true};}
  }
  return this.attack(pending.cardUid,redirect||pending.targetUid,true);
@@ -203,7 +205,7 @@ P.endTurn=function(){
    if(this.over)return;this.active=1-this.active;this.turn++;const p=this.p();p.commonUsed=0;p.specialUsed=0;
    for(const c of this.fieldSer()){c.mods=c.mods.filter(m=>m.expires>=this.turn);if(c.sealedUntil<this.turn)c.sealedUntil=0;if(c.controller===this.active)c.hasAttacked=false;}
    for(const player of this.players)for(const c of player.field.support)if(c?.mods)c.mods=c.mods.filter(m=>m.expires>=this.turn);
-   this.draw(this.active,this.cfg.drawPerTurn);this.info('Turno de Jogador '+(this.active+1)+'.');this.checkWin();
+   this.draw(this.active,this.cfg.drawPerTurn,true);this.info('Turno de Jogador '+(this.active+1)+'.');this.checkWin();
   };
   if(this.choices.length)(this.afterChoices??=[]).push(advance);else advance();
  };

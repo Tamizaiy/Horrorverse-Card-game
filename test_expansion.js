@@ -43,7 +43,7 @@ for(const r of HV_RIVALS){assert(HV_DATA.validDeck(r.deck));assert.equal(r.deck.
 // Every custom action can be invoked with legal fixtures and its choices settle.
 for(const card of HV_DATA.CARD_LIBRARY.filter(c=>c.effects?.some(e=>e.op==='CUSTOM')&&c.subtype!=='field'&&c.subtype!=='reaction')){
  const g=game();g.cfg.deferChoices=false;const source=add(g,card.id,0,card.kind==='ser'?'ser':'support'),human=add(g,'testemunha'),enemy=add(g,'cultista',1);human.counters.medo=4;enemy.counters.medo=3;human.terrorCurrent=1;
- for(let i=0;i<4;i++)add(g,i%2?'leitura_tatica':'vigia',0,'hand');add(g,'leitura_tatica',0,'grave');add(g,'reporter_inexplicavel',0,'grave');
+ add(g,'lamina',0,'hand');for(let i=0;i<4;i++)add(g,i%2?'leitura_tatica':'vigia',0,'hand');add(g,'leitura_tatica',0,'grave');add(g,'reporter_inexplicavel',0,'grave');
  g.runEffects(card.effects,source.uid,human.uid,0);g.drainChoices();assert.equal(g.choices.length,0,card.name);assert(g.fieldSer().every(c=>g.fear(c)>=0));
 }
-console.log('OK: 129 cards; rivals; Zombie targets; Human costs; reactions; recovery; counters; round timing; every custom effect.');
+console.log('OK: 162 cards; rivals; Zombie targets; Human costs; reactions; recovery; counters; round timing; every custom effect.');

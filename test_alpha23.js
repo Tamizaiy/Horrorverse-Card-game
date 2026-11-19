@@ -25,9 +25,9 @@ const spell=(g,id,target)=>{
  return c;
 };
 
-assert.equal(catalogue.length,129);
-assert.equal(new Set(catalogue.map(c=>c.id)).size,129);
-assert.equal(catalogue.filter(c=>c.subtype==='continuous').length,6);
+assert.equal(catalogue.length,162);
+assert.equal(new Set(catalogue.map(c=>c.id)).size,162);
+assert.equal(catalogue.filter(c=>c.subtype==='continuous').length,10);
 assert(catalogue.every(c=>!c.art||fs.existsSync(c.art)));
 assert.equal(catalogue.find(c=>c.id==='drenagem_pavor').subtype,'normal');
 assert.equal(catalogue.find(c=>c.id==='circulo_colapso').subtype,'field');

@@ -15,6 +15,10 @@ function wallet(){
 }
 function selectPack(pack){
  selected=pack;
+ $('packPreview').src=pack.art;
+ if(!reduced())$('packPreview').animate([{opacity:.5,transform:'translateY(4px) rotate(-2deg)'},{opacity:1,transform:'none'}],{duration:220,easing:'ease-out'});
+ $('inspectPack').textContent='Ver as '+pack.cards.length+' cartas possíveis';
+ $('shopError').textContent='';
  $('selectedPack').textContent=pack.name;
  $('packDescription').textContent=pack.description;
  for(const button of $('shopPacks').children)button.setAttribute('aria-pressed',String(button.dataset.pack===pack.id));
@@ -23,14 +27,24 @@ function selectPack(pack){
 for(const pack of HV_BOOSTERS.packs){
  const button=document.createElement('button');
  button.type='button';button.className='shop-pack';button.dataset.pack=pack.id;
- button.innerHTML=`<img class="booster-wrapper" src="${pack.art}" alt=""><span><b>${esc(pack.name)}</b><small>${pack.size} cartas · ${format(P.cost)} Rubédio</small></span>`;
- button.onclick=()=>{selectPack(pack);window.hvMenu.sound();};
+ button.innerHTML=`<img class="booster-wrapper" src="${pack.art}" alt=""><span><b>${esc(pack.name)}</b><small>${pack.size} cartas · ${format(pack.price)} Rubédio</small></span>`;
+ button.onclick=()=>{selectPack(pack);window.hvMenu.sound('inspect');};
  $('shopPacks').append(button);
 }
+const catalogue=new Map(HV_DATA.CARD_LIBRARY.map(card=>[card.id,card]));
+$('inspectPack').onclick=()=>{
+ $('packContentsTitle').textContent=selected.name;
+ $('packContentsCount').textContent=selected.cards.length+' cartas possíveis · 5 por pacote';
+ $('possiblePulls').innerHTML=selected.cards.map(id=>catalogue.get(id)).sort((a,b)=>a.name.localeCompare(b.name,'pt-BR')).map(card=>
+  '<li><img loading="lazy" src="'+esc(card.art)+'" alt=""><span>'+esc(card.name)+'</span></li>').join('');
+ $('packContents').showModal();window.hvMenu.sound('inspect');
+};
+$('goOpenPacks').onclick=()=>window.hvMenu.show('builder');
 const sellerHappy=new Image();
 sellerHappy.src=image+'vendor-sale.webp';
 function shop(){
  $('shopScreen').hidden=false;
+ $('goOpenPacks').hidden=!Object.values(P.profile().packs).some(n=>n>0);
  $('shopVendor').src=image+'vendor.webp';
  $('shopVendor').classList.remove('sale');
  $('vendorLine').textContent=greeter;
@@ -47,13 +61,16 @@ function closeShop(){
 function leaveShop(){window.hvMenu.show('home');}
 $('shopBack').onclick=leaveShop;
 window.addEventListener('keydown',e=>{
- if(e.key==='Escape'&&!$('shopScreen').hidden&&!$('confirmPurchase').open){e.preventDefault();leaveShop();}
+ if(e.key==='Escape'&&!$('shopScreen').hidden&&!$('confirmPurchase').open&&!$('packContents').open&&!e.defaultPrevented){e.preventDefault();leaveShop();}
 });
 function quote(){
  const count=$('shopCount').valueAsNumber;
  const valid=Number.isInteger(count)&&count>=1&&count<=99;
- $('shopTotal').textContent=valid?format(count*P.cost)+' Rubédio':'Selecione de 1 a 99 pacotes';
- $('shopConfirm').disabled=!valid;
+ $('shopTotal').textContent=valid?format(count*selected.price)+' Rubédio':'Selecione de 1 a 99 pacotes';
+ const missing=valid?Math.max(0,count*selected.price-P.profile().balance):0;
+ $('shopConfirm').disabled=!valid||missing>0;
+ $('shopConfirm').title=missing?'Saldo insuficiente':'';
+ $('shopError').textContent=missing?'Faltam '+format(missing)+' Rubédios para essa compra.':'';
  $('shopMinus').disabled=count<=1;
  $('shopPlus').disabled=count>=99;
 }
@@ -67,9 +84,9 @@ $('buyPack').onsubmit=e=>{
  $('shopError').textContent='';
  const count=$('shopCount').valueAsNumber;
  if(!Number.isInteger(count)||count<1||count>99)return;
- if(count*P.cost>P.profile().balance){$('shopError').textContent='Rubédio insuficiente para essa compra.';return;}
- checkout={pack:selected,count};
- $('purchaseText').textContent=`${count} × ${selected.name} por ${format(count*P.cost)} Rubédio. Abra os pacotes no Deck Builder.`;
+ if(count*selected.price>P.profile().balance){$('shopError').textContent='Rubédio insuficiente para essa compra.';return;}
+ checkout={pack:selected,count};$('checkoutArt').src=selected.art;
+ $('purchaseText').textContent=`${count} × ${selected.name} por ${format(count*selected.price)} Rubédio. Abra os pacotes no Deck Builder.`;
  $('confirmPurchase').showModal();
 };
 function saleAnimation(before,after){
@@ -107,7 +124,7 @@ $('purchaseYes').onclick=()=>{
   const before=P.profile().balance;
   const after=P.buy(pack.id,count).balance;
   $('confirmPurchase').close();
-  saleAnimation(before,after);wallet();window.hvMenu.sound();
+  saleAnimation(before,after);wallet();quote();$('goOpenPacks').hidden=false;window.hvMenu.sound('purchase');
   const vendor=$('shopVendor');
   vendor.src=sellerHappy.src;vendor.classList.remove('sale');void vendor.offsetWidth;vendor.classList.add('sale');
   $('vendorLine').textContent='Ah, o brilho do Rubédio… Volte sempre. De preferência com os bolsos cheios.';

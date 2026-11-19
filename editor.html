@@ -27,7 +27,7 @@
 .art img{display:block;width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;object-position:center;aspect-ratio:auto}
 </style>
 <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="editor-polish.css"><link rel="stylesheet" href="booster.css"><script src="cards.js"></script><script src="booster-catalogue.js"></script><script src="cards-ui.js"></script>
-<style>.filter-menu{position:relative;z-index:20}.filter-menu summary{cursor:pointer;padding:10px 14px;border:1px solid #655261;border-radius:7px;background:#28212e}.filter-panel{position:absolute;right:0;top:44px;width:260px;padding:18px;background:#1e1923;border:1px solid #806377;border-radius:10px;box-shadow:0 12px 35px #0009;display:grid;gap:10px}.filter-panel label{color:#c6afbd;font-size:12px}.filter-panel .field{max-width:none}</style></head>
+<style>.filter-menu{position:relative;z-index:20}.filter-menu summary{cursor:pointer;padding:10px 14px;border:1px solid #655261;border-radius:7px;background:#28212e}.filter-panel{position:absolute;right:0;top:44px;width:260px;padding:18px;background:#1e1923;border:1px solid #806377;border-radius:10px;box-shadow:0 12px 35px #0009;display:grid;gap:10px}.filter-panel label{color:#c6afbd;font-size:12px}.filter-panel .field{max-width:none}</style><link rel="icon" href="favicon.ico"><link rel="stylesheet" href="interface.css"></head>
 <body>
 <div class="app">
 <header class="top">
@@ -41,6 +41,9 @@
 <div class="toolbar"><div class="tabs"><button class="tab active" id="tabDeck">Meu deck</button><button class="tab" id="tabCollection">Coleção</button></div><input class="search" id="search" placeholder="Buscar carta..." aria-label="Buscar carta"><div class="view-switch" role="group" aria-label="Visualização das cartas"><button class="tab" type="button" id="viewBlocks" aria-label="Ver em blocos" title="Blocos" aria-pressed="true">▦</button><button class="tab" type="button" id="viewList" aria-label="Ver em lista" title="Lista" aria-pressed="false">☰</button></div><details class="filter-menu"><summary id="filterLabel">Filtrar cartas</summary><div class="filter-panel"><label for="filter">Tipo</label><select class="field" id="filter"><option value="all">Todos os tipos</option><option value="ser">Seres</option><option value="common">Seres comuns</option><option value="special">Seres especiais</option><option value="item">Itens</option><option value="magic">Feitiços</option></select><label for="subtypeFilter">Subtipo</label><select class="field" id="subtypeFilter"><option value="all">Todos os subtipos</option></select><button class="btn ghost" id="clearFilters" type="button">Limpar filtros</button></div></details></div>
 <div class="pack-tools"><strong id="packCount">0 pacotes para abrir</strong> <select id="packType" aria-label="Tipo de pacote"></select> <button class="btn" id="openPack" disabled>Abrir pacote</button></div><div class="grid" id="grid"></div>
 <div class="footer" id="listInfo">Selecione uma carta para ver detalhes e adicioná-la ou removê-la do deck.</div><div class="actions"><button class="btn danger" id="clearDeck" type="button">✕ Esvaziar baralho</button><button class="btn ghost" id="randomDeck" type="button">⤨ Sortear baralho</button><button class="btn" id="saveDeck" type="button">Salvar baralho</button><span id="deckValid" class="hint"></span></div>
+<div class="encyclopedia-entry">
+ <button id="openEncyclopedia" class="btn ghost" type="button" disabled>Card Enciclopédia</button>
+</div>
 </section>
 <aside class="right">
 <section class="panel"><h2 class="panel-title">Arte da carta <span id="artState" class="subheading">—</span></h2><div class="art" id="artPreview"><div class="icon">▧</div><small>Selecione uma carta para visualizar sua arte.</small></div></section>
@@ -71,6 +74,18 @@
   </section>
  </div>
 </dialog>
+<dialog id="cardEncyclopedia" aria-labelledby="encyclopediaTitle">
+ <header class="encyclopedia-header">
+  <div>
+   <h2 id="encyclopediaTitle">Card Enciclopédia</h2>
+   <p id="encyclopediaProgress"></p>
+   <p class="encyclopedia-legend">Em cores, cartas da sua coleção. Em cinza, cartas que faltam.</p>
+  </div>
+  <form method="dialog"><button class="btn ghost" autofocus>Fechar</button></form>
+ </header>
+ <div class="encyclopedia-tools"><input type="search" id="archiveSearch" placeholder="Buscar por nome ou tipo" aria-label="Buscar na enciclopédia"><select id="archiveFilter" aria-label="Cartas da coleção"><option value="all">Todas as cartas</option><option value="owned">Já possuo</option><option value="missing">Ainda faltam</option></select><progress id="archiveProgress" aria-label="Coleção completa"></progress></div>
+ <ul id="encyclopediaGrid" aria-label="Catálogo de cartas"></ul>
+</dialog>
 <script>
 // HORRORVERSE Alpha 0.5 — Deck Builder somente leitura.
 // Catálogo vindo exclusivamente de cards.js, não há edição de cartas neste módulo.
@@ -86,6 +101,29 @@ const valid=()=>HV_DATA.validDeck(deck);
 const canAdd=c=>c&&deck.length<maxDeckSize&&copies(c.id)<Math.min(owned[c.id]||0,maxCopies);
 const createRandomDeck=()=>HV_DATA.randomDeck(owned);
 function status(msg,bad=false){$('status').textContent=msg;$('status').style.color=bad?'#ffa3a9':'#a4d5b2'}
+const encyclopediaCards=[...HV_DATA.CARD_LIBRARY].sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+const normalizeSearch=value=>value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR').trim();
+$('archiveSearch').oninput=$('archiveFilter').onchange=()=>{renderEncyclopedia();$('encyclopediaGrid').scrollTop=0;};
+function renderEncyclopedia(){
+ const entries=encyclopediaCards.map(card=>({card,collected:owned[card.id]>0}));
+ const collected=entries.filter(entry=>entry.collected).length;
+ const missing=entries.length-collected;
+ const progress=missing===0?'Coleção completa':missing===1?'Falta 1 carta':`Faltam ${missing} cartas`;
+ $('encyclopediaProgress').textContent=`${collected} de ${entries.length} cartas diferentes · ${progress}`;
+ $('archiveProgress').max=entries.length;$('archiveProgress').value=collected;
+ const query=normalizeSearch($('archiveSearch').value),filter=$('archiveFilter').value;
+ const matching=entries.filter(({card,collected})=>(filter==='all'||collected===(filter==='owned'))&&normalizeSearch([card.name,card.affinity,card.cardSubtype,({ser:'Ser',magia:'Feitiço',item:'Item'})[card.kind]].filter(Boolean).join(' ')).includes(query));
+ $('encyclopediaGrid').innerHTML=matching.map(({card,collected})=>`
+  <li class="${collected?'encyclopedia-owned':'encyclopedia-missing'}">
+   <div class="encyclopedia-art" aria-hidden="true">${HV_UI.markup(card,{lazy:true})}</div>
+   <span>${esc(card.name)}</span><span class="encyclopedia-status">${collected?'Na coleção':'Em falta'}</span>
+  </li>`).join('')||'<li class="archive-empty">Nenhuma carta corresponde à busca.</li>';
+}
+$('openEncyclopedia').onclick=()=>{
+ renderEncyclopedia();
+ $('cardEncyclopedia').showModal();
+ $('encyclopediaGrid').scrollTop=0;
+};
 function send(action,data={}){try{window.parent.postMessage({source:'hv-builder',action,...data},'*')}catch{}}
 function toCard(c){return {...c,kind:['common','special'].includes(c.type)?'ser':c.type==='item'?'item':'magia',rarity:c.type==='common'?'comum':'especial'}}
 function subtypeOf(c){return ['common','special'].includes(c.type)?c.affinity:c.cardSubtype||({field:'Campo',reaction:'Reação',continuous:'Contínuo'}[c.subtype]||'Normal')}
@@ -101,6 +139,7 @@ function cardStats(c){
 }
 function typeName(c){return ['common','special'].includes(c.type)?'Ser':c.type==='item'?'Item':'Feitiço'}
 function openDetails(id){
+ send('sound',{kind:'inspect'});
  selected=id;if(discoveries[id]){delete discoveries[id];send("markSeen",{id});}redraw();if(!$('cardZoom').open)$('cardZoom').showModal();
 }
 function renderGrid(){
@@ -111,7 +150,7 @@ function renderGrid(){
  renderHeader();$('tabDeck').classList.toggle('active',tab==='deck');$('tabCollection').classList.toggle('active',tab==='collection');
  const q=$('search').value.toLocaleLowerCase('pt-BR').trim(),f=$('filter').value;
  const base=tab==='deck'?[...new Set(deck)].map(id=>cards.find(c=>c.id===id)).filter(Boolean):cards.filter(c=>owned[c.id]>0);
- const filtered=base.filter(c=>(f==='all'||c.type===f||(f==='ser'&&['common','special'].includes(c.type)))&&($('subtypeFilter').value==='all'||subtypeOf(c)===$('subtypeFilter').value)&&c.name.toLocaleLowerCase('pt-BR').includes(q));
+ const filtered=base.filter(c=>(f==='all'||c.type===f||(f==='ser'&&['common','special'].includes(c.type)))&&($('subtypeFilter').value==='all'||subtypeOf(c)===$('subtypeFilter').value)&&normalizeSearch(c.name).includes(normalizeSearch(q)));
  $('grid').innerHTML=filtered.length?filtered.map((c,i)=>{const number=copies(c.id);const badge=discoveries[c.id]?'<span class="new-card-badge">NOVO</span>':'';
  if(isList)return `<button type="button" class="list-card ${selected===c.id?'selected':''}" data-id="${esc(c.id)}" aria-label="Ver detalhes de ${esc(c.name)}">
   <span class="list-card-top"><strong>${esc(c.name)}</strong>${badge}<span class="list-stats">${cardStats(c)}${c.periculosidade!==undefined?`<span class="detail-badge">Periculosidade ${c.periculosidade}</span>`:''}</span>
@@ -138,13 +177,14 @@ function renderDetails(){
  $('details').innerHTML=`<h3 class="detail-name">${esc(c.name)}</h3><span class="detail-badge" style="border-color:${m.color}">${m.name}</span>${c.cardSubtype?`<span class="detail-badge">${esc(c.cardSubtype)}</span>`:''}${c.affinity?`<span class="detail-badge">${esc(c.affinity)}</span>`:''}<span class="detail-badge">No deck: ${copies(c.id)}/${maxCopies}</span>${c.periculosidade!==undefined?`<span class="detail-badge">Periculosidade ${c.periculosidade}</span>`:''}${stats}${req}<div class="detail-section">Descrição / habilidades</div><p class="detail-text">${esc(c.effect||'Nenhuma descrição cadastrada.')}</p><hr class="rule"><p class="deck-help">As informações são somente para consulta. Para construir seu baralho, utilize os botões abaixo; nenhum atributo ou habilidade pode ser modificado nesta tela.</p>`;
 }
 function redraw(){renderGrid();renderDetails()}
-function change(add){const c=cards.find(x=>x.id===selected);if(!c)return;if(add){if(!canAdd(c))return;deck.push(c.id);status('Carta adicionada.')}else{const index=deck.indexOf(c.id);if(index<0)return;deck.splice(index,1);status('Carta removida.')}redraw()}
-let packs={},owned={},discoveries={},revealTimer=0;
+function change(add){const c=cards.find(x=>x.id===selected);if(!c)return;if(add){if(!canAdd(c))return;deck.push(c.id);status('Carta adicionada.')}else{const index=deck.indexOf(c.id);if(index<0)return;deck.splice(index,1);status('Carta removida.')}redraw();send('sound',{kind:add?'inspect':'remove'});}
+let packs={},owned={},discoveries={},revealTimer=0,chimeTimer=0,tearTimer=0;
 function updateInventory(msg){
  packs=msg.packs||{};owned=msg.owned||{};discoveries=msg.discoveries||{};
+ if($('cardEncyclopedia').open)renderEncyclopedia();
 }
 function finishReveal(){
- clearTimeout(revealTimer);
+ clearTimeout(revealTimer);clearTimeout(chimeTimer);clearTimeout(tearTimer);
  $('packReveal').classList.remove('opening');
  $('skipReveal').hidden=true;
  $('closeReveal').disabled=false;
@@ -162,8 +202,10 @@ function revealPack(type,results){
   <span>${esc(c.name)}</span><small>${c.isNew?'Primeira cópia':'+1 cópia'}</small></div>`).join('');
  $('packCards').style.setProperty('--pull-count',results.length);
  dialog.showModal();
- const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
- if(reduced){finishReveal();return;}
+ const reduced=document.body.classList.contains('reduced-motion')||matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if(reduced){send('sound',{kind:'discover'});finishReveal();return;}
+ tearTimer=setTimeout(()=>send('sound',{kind:'tear'}),340);
+ chimeTimer=setTimeout(()=>send('sound',{kind:'discover'}),760);
  dialog.classList.add('opening');$('closeReveal').disabled=true;$('skipReveal').hidden=false;
  revealTimer=setTimeout(finishReveal,1160+results.length*155);
 }
@@ -189,7 +231,7 @@ function receive(msg){
   renderPacks();tab='collection';$('search').value='';$('filter').value='all';updateSubtypes();redraw();
   revealPack(msg.type,msg.results);return;
  }
- if(msg?.action==='init'&&msg.source==='hv-game'){updateInventory(msg);renderPacks();}
+ if(msg?.action==='init'&&msg.source==='hv-game'){document.body.classList.toggle('reduced-motion',!!msg.reduced);updateInventory(msg);renderPacks();}
 if(!msg||msg.source!=='hv-game'||msg.action!=='init'||!Array.isArray(msg.cards)||!Array.isArray(msg.deck))return;
  cards=msg.cards.filter(c=>c&&typeof c.id==='string'&&typeof c.name==='string'&&META[c.type]&&owned[c.id]>0).map(c=>({...c}));
  const ids=new Set(cards.map(c=>c.id));
@@ -199,11 +241,12 @@ if(!msg||msg.source!=='hv-game'||msg.action!=='init'||!Array.isArray(msg.cards)|
  deck=HV_DATA.validDeck(msg.draft,{draft:true})?msg.draft.filter(id=>remaining[id]-- >0):savedDeck.slice();
  if(msg.draft?.length>=minDeckSize&&deck.length<minDeckSize)deck=savedDeck.slice();
  ready=true;selected=cards.find(c=>c.id===selected)?.id||deck[0]||cards[0]?.id||null;
+ $('openEncyclopedia').disabled=false;
  tab='deck';updateSubtypes();redraw();status('Deck Builder conectado! Selecione as cartas e salve um baralho válido.');
 }
 window.addEventListener('message',e=>receive(e.data));
 $('tabDeck').onclick=()=>{tab='deck';redraw()};$('tabCollection').onclick=()=>{tab='collection';redraw()};
-$('search').oninput=renderGrid;$('filter').onchange=()=>{updateSubtypes();renderGrid()};$('subtypeFilter').onchange=()=>{renderGrid();$('filterLabel').textContent=$('subtypeFilter').value==='all'?'Filtrar cartas':$('subtypeFilter').value};$('clearFilters').onclick=()=>{$('filter').value='all';updateSubtypes();renderGrid();$('filterLabel').textContent='Filtrar cartas'};
+$('search').oninput=renderGrid;$('filter').onchange=()=>{updateSubtypes();renderGrid()};$('subtypeFilter').onchange=()=>{renderGrid();$('filterLabel').textContent=$('subtypeFilter').value==='all'?'Filtrar cartas':$('subtypeFilter').value};$('clearFilters').onclick=()=>{$('search').value='';$('filter').value='all';updateSubtypes();renderGrid();$('filterLabel').textContent='Filtrar cartas'};
 $('add').onclick=$('zoomAdd').onclick=()=>change(true);$('remove').onclick=$('zoomRemove').onclick=()=>change(false);
  $('viewDetails').onclick=()=>openDetails(selected);$('zoomClose').onclick=()=>$('cardZoom').close();
  $('cardZoom').onclick=e=>{if(e.target===$('cardZoom'))$('cardZoom').close()};

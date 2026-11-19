@@ -1,0 +1,4 @@
+Horrorverse Alpha 2.3.7
+Copie o conteúdo desta pasta (index.html na raiz) para o repositório usado pelo Netlify.
+O site usa o Supabase Auth do Horrorverse para cadastro, confirmação de e-mail, login e recuperação de senha. O apelido é salvo em hv_profiles.
+Coleção, decks e Rubédio continuam salvos no navegador, inclusive ao trocar de conta. O botão de reset reinicia o progresso local.

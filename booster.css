@@ -39,7 +39,7 @@
 @keyframes shop-enter{from{opacity:0}to{opacity:1}}
 @keyframes vendor-sale{0%{transform:translateY(4px) scale(.98);opacity:.75}100%{transform:none;opacity:1}}
 @keyframes rubedio-drop{0%{opacity:0;transform:translate(0) rotate(0)}18%{opacity:1}78%{opacity:1}100%{opacity:0;transform:translate(var(--drift),var(--drop)) rotate(var(--spin)) scale(.55)}}
-@media(max-width:680px),(max-height:600px){
+@media(max-width:900px),(max-height:600px){
  .shop-stage{display:flex;flex-direction:column;gap:12px;height:auto;min-height:100dvh;padding:0 14px 12px;background-size:auto 100%}
  .shop-top,.shop-packs,.shop-checkout,.shop-dialogue,.shop-status{position:relative;inset:auto;width:100%}
  .shop-top{padding:12px 0;gap:5px}.shop-top h1{font-size:clamp(15px,4.4vw,25px)}#shopBack{padding:6px;font-size:10px}.shop-wallet{font-size:10px;padding:4px;gap:4px}.shop-wallet img{width:12px;height:17px}
@@ -58,3 +58,10 @@
  .shop-pack:nth-child(4){grid-column:2 / span 2}
  .shop-pack img{width:min(100%,85px)}
 }
+
+@media(min-width:901px) and (min-height:601px){
+ .shop-packs{top:18%;left:29%;width:47%;grid-template-columns:repeat(4,minmax(0,1fr));row-gap:1.7vh}
+ .shop-pack img{width:min(100%,10.4vh)}
+ .shop-pack span{font-size:clamp(10px,.9vw,14px)}
+}
+@media(max-width:900px),(max-height:600px){.shop-packs{grid-template-columns:repeat(4,minmax(0,1fr))}.shop-pack,.shop-pack:nth-child(4){grid-column:auto}}

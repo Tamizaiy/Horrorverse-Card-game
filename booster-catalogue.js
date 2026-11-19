@@ -2,7 +2,7 @@
 'use strict';
 const packs=[
  {id:'medo', name:'Moedas do Terror', description:'Acumule Contadores de Medo e use-os para enfraquecer seus inimigos.',
-  cards:['zumbi','boneca','portador','testemunha','noiva','oraculo','executor','cobrador','vigario','eco','devorador_pavor',
+  cards:['zumbi','boneca','portador','testemunha','noiva','oraculo','executor','vigario','eco','devorador_pavor',
    'fita','correntes_condenacao','ampulheta_colapso','amaldicoar','drenagem_pavor','veu_lucidez','circulo_colapso']},
  {id:'resistencia', name:'Última Resistência', description:'Proteja seus Humanos e recupere cartas do descarte.',
   cards:['reporter_inexplicavel','arquivista_proibido','medica_vigilia','engenheira_refugio','investigadora_nevoa','sobrevivente_desesperado',
@@ -12,13 +12,73 @@ const packs=[
   cards:['xenomorfo','fera','carcaca','morcego','rastejante','lobisomem_jovem','lobisomem_adulto','organismo_primordial',
    'gek_felliax','gek_pulliax','gek_omelliax','impeto_besta','afiar_garras','poco','metamorfose_corrupta']},
  {id:'feiticos', name:'Chama de Portão de Feitiços', description:'Feitiços de Campo, Contínuos, Reações e outras magias para o seu deck.',
-  cards:['rlyeh','exorcismo','pesadelo','selo','interdicao','reviver','cripta','frenesi','beco','fenda','santuario','matadouro','trono','limiar',
+  cards:['exorcismo','pesadelo','selo','interdicao','cripta','frenesi','beco','santuario','matadouro','trono','limiar',
    'leitura_tatica','destruicao_mutua','protecao_emergencia','desvio_alvo','recalibrar_postura','refugio_panico',
-   'sistema_cambio_oculto','queda_continua_desesperada','campo_drenagem','fila_espera_submundo','parasita_vertiginoso',
-   'drenagem_almas','selo_enfraquecimento','escorregao']},
+   'parasita_vertiginoso',
+   'selo_enfraquecimento','escorregao']},
  {id:'itens', name:'Itens do Profano', description:'Relíquias para comprar cartas, proteger seus Seres e manipular Contadores de Medo.',
   cards:['necro','moeda','grilhoes','manuscrito','balanca_pavor','calice_serenidade','bolsa_triagem',
-   'prisma_possuido','dardos_quebra_dedos','cutelo_enferrujado','amuleto_praga']}
+   'prisma_possuido','dardos_quebra_dedos','cutelo_enferrujado','amuleto_praga','rosa_sangue','sinete_estranho','bracadeiras','placa_pedra','kit_facas','capa_metal','velas_seita','caixa_amagot','espada_sobrecarregada']},
+{
+  "id": "cosmico",
+  "name": "Reino Cósmico",
+  "description": "Reúna os Seres das nébulas sob o Círculo de R’lyeh.",
+  "price": 250,
+  "cards": [
+    "cthulhu",
+    "cobrador",
+    "rlyeh",
+    "alinhamento",
+    "pressas_obscuro",
+    "marun",
+    "gargante",
+    "tempta",
+    "blum",
+    "vog",
+    "mente_estelar",
+    "corsol"
+  ]
+},
+{
+  "id": "infernal",
+  "name": "Criaturas do Submundo",
+  "description": "Reúna os quatro Demônios Elementais para invocar Killmagor.",
+  "price": 250,
+  "cards": [
+    "pinhead",
+    "imperador_cinzas_eternas",
+    "fenda",
+    "adereco_cervideo",
+    "guardiao_portao",
+    "diabrete",
+    "megha",
+    "reyna",
+    "helial",
+    "basil",
+    "groma",
+    "killmagor"
+  ]
+},
+{
+  "id": "alta_magia",
+  "name": "Alta Qualidade Mágica",
+  "description": "Feitiços que mudam as regras do campo e o rumo do duelo.",
+  "price": 250,
+  "cards": [
+    "reviver",
+    "sistema_cambio_oculto",
+    "queda_continua_desesperada",
+    "campo_drenagem",
+    "fila_espera_submundo",
+    "drenagem_almas",
+    "negacao_passagem",
+    "supernova",
+    "tempestade_penas",
+    "crescimento_excessivo",
+    "decaimento",
+    "taxacao"
+  ]
+}
 ];
 const released=new Set([...root.HV_DATA.DEFAULT_DECK,...packs.flatMap(pack=>pack.cards)]);
 const legacyPacks=new Map();
@@ -27,7 +87,7 @@ for(const c of root.HV_DATA.CARD_LIBRARY){
  if(!legacyPacks.has(c.affinity))legacyPacks.set(c.affinity,{id:c.affinity,name:c.affinity+' · coleção anterior',size:3,cards:[]});
  legacyPacks.get(c.affinity).cards.push(c.id);
 }
-const byId=new Map(packs.map(pack=>[pack.id,{...pack,size:5,art:'assets/progression/pack-'+pack.id+'.webp'}]));
+const byId=new Map(packs.map(pack=>[pack.id,{price:100,...pack,size:5,art:'assets/progression/pack-'+pack.id+'.webp'}]));
 function get(id){return byId.get(id)||legacyPacks.get(id)||null;}
 root.HV_BOOSTERS={
  packs:[...byId.values()],get,

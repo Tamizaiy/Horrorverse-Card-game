@@ -7,8 +7,11 @@
 .phase-bar>*{display:flex;align-items:center;justify-content:center;gap:5px;min-height:25px;font:600 clamp(8px,1.1vw,15px)/1.06 Georgia,serif;color:#ecceb3;border:1px solid #9c664e;border-radius:12px 8px;background:linear-gradient(#3d2225,#24171e);box-shadow:inset 0 0 7px #0b070a,0 0 0 2px #180d12}
 .phase-bar>i,.phase-bar i{font-style:normal;color:#dc9d75}
 .phase-bar>*[aria-current="step"]{border-color:#ffc588;color:#fff0cd;background:linear-gradient(#72422e,#40221d);box-shadow:inset 0 0 8px #c3743f,0 0 14px #f39c5b}
-.phase-notice,.chain-notice{position:fixed;z-index:135;left:50%;top:44%;transform:translate(-50%,-50%);pointer-events:none;width:min(90vw,600px);padding:13px 16px;text-align:center;color:#ffead2;font:700 clamp(22px,4vw,42px)/1.15 Georgia,serif;background:linear-gradient(90deg,transparent,#260f18 18%,#39181e 50%,#260f18 82%,transparent);border-block:1px solid #b57959;text-shadow:0 0 12px #e97954}
-.chain-notice{top:32%;width:max-content;max-width:95vw;font-size:clamp(16px,3vw,32px);color:#ffe0a2}
+.phase-notice,.chain-notice{z-index:135;left:50%;transform:translate(-50%,-50%);pointer-events:none;padding:13px 16px;text-align:center;color:#ffead2;font:700 clamp(22px,4vw,42px)/1.15 Georgia,serif;background:linear-gradient(90deg,transparent,#260f18 18%,#39181e 50%,#260f18 82%,transparent);border-block:1px solid #b57959;text-shadow:0 0 12px #e97954}
+.phase-notice{position:absolute;top:50%;width:min(100%,600px)}
+.chain-notice{position:fixed;top:32%;width:max-content;max-width:95vw;font-size:clamp(16px,3vw,32px);color:#ffe0a2}
+.tutorial-rules>h3,.tutorial-practice>h3{margin:0 0 12px;font:400 clamp(22px,3vw,30px) Georgia,serif;color:#e4d7c4}
+.tutorial-practice{max-width:670px;margin-top:28px;padding-top:18px;border-top:1px solid var(--line)}
 .story-scene{position:relative;min-height:clamp(430px,70vh,650px);border:1px solid #967254;border-radius:8px;overflow:hidden;padding:24px;background:#1d1118 center/cover}
 .story-scene{display:flex;flex-direction:column;justify-content:space-between;background-position:center}
 .story-dialogue,.tutorial-tip{display:flex;align-items:center;gap:12px;padding:12px;background:#1d1019f2 url(assets/progression/dialogue.webp) center/100% 100% no-repeat;border:1px solid #9a5a50;border-radius:8px}
